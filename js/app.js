@@ -289,9 +289,16 @@ const app = {
 
             <div class="settings-group-box">
                 <h4 style="font-size:12.5px;">🚀 xAI (Grok) API Key</h4>
-                <p style="font-size:10px; color:var(--text-secondary);">Fallback when Gemini is rate-limited. Free at console.x.ai.</p>
+                <p style="font-size:10px; color:var(--text-secondary);">Fallback when Gemini is rate-limited. Get credits at console.x.ai.</p>
                 <input class="settings-input" type="password" id="settings-xai-input" placeholder="Enter xAI API Key..." value="${aiEngine.xaiKey}">
                 <button class="primary-btn" onclick="app.saveXaiKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
+            </div>
+
+            <div class="settings-group-box">
+                <h4 style="font-size:12.5px;">⚡ Groq API Key</h4>
+                <p style="font-size:10px; color:var(--text-secondary);">Free fast LLM fallback. Get free key at console.groq.com.</p>
+                <input class="settings-input" type="password" id="settings-groq-input" placeholder="Enter Groq API Key..." value="${aiEngine.groqKey}">
+                <button class="primary-btn" onclick="app.saveGroqKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
             </div>
 
             <div class="settings-group-box">
@@ -368,7 +375,14 @@ const app = {
     saveXaiKey() {
         const key = document.getElementById('settings-xai-input').value.trim();
         aiEngine.setXaiKey(key);
-        alert(key ? "xAI (Grok) API Key loaded! Fallback enabled." : "xAI key cleared.");
+        alert(key ? "xAI (Grok) API Key loaded!" : "xAI key cleared.");
+        this.closeModal();
+    },
+
+    saveGroqKey() {
+        const key = document.getElementById('settings-groq-input').value.trim();
+        aiEngine.setGroqKey(key);
+        alert(key ? "Groq API Key loaded! Free fast AI enabled." : "Groq key cleared.");
         this.closeModal();
     },
 

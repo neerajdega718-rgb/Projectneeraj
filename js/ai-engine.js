@@ -13,6 +13,8 @@ const aiEngine = {
     geminiMode: !!studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
     xaiKey: studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
     xaiMode: !!studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
+    groqKey: studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
+    groqMode: !!studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
 
     setApiKey(key) {
         const cleanKey = key ? key.trim() : '';
@@ -57,6 +59,13 @@ const aiEngine = {
         this.xaiMode = !!cleanKey;
         studySnapUtils.safeStorage.setItem('studysnap_xai_key', cleanKey);
         if (!this.apiKey && !this.geminiKey) this.sandboxMode = !this.xaiMode;
+    },
+
+    setGroqKey(key) {
+        const cleanKey = key ? key.trim() : '';
+        this.groqKey = cleanKey;
+        this.groqMode = !!cleanKey;
+        studySnapUtils.safeStorage.setItem('studysnap_groq_key', cleanKey);
     },
 
     async tavilySearch(query) {
@@ -211,6 +220,36 @@ const aiEngine = {
         return null;
     },
 
+    async groqComplete(prompt, context, systemPrompt) {
+        if (!this.groqKey) return null;
+        var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
+        console.log('Groq: sending request');
+        try {
+            var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + this.groqKey },
+                body: JSON.stringify({
+                    model: 'llama-3.1-70b-versatile',
+                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: (context ? 'Context:\n' + context + '\n\n' : '') + prompt }],
+                    max_tokens: 8192,
+                    temperature: 0.7
+                })
+            });
+            console.log('Groq: status=' + res.status);
+            if (!res.ok) {
+                var errBody = await res.text();
+                console.warn('Groq failed:', res.status, errBody.substring(0, 200));
+                return null;
+            }
+            var d = await res.json();
+            if (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) {
+                console.log('Groq: SUCCESS');
+                return d.choices[0].message.content;
+            }
+        } catch(e) { console.warn('Groq error:', e.message); }
+        return null;
+    },
+
     /* General wrapper to get completion */
     async getCompletion(prompt, systemPrompt = "You are a helpful student tutor.") {
         // For flashcard/quiz/essay, always use sandbox (needs strict JSON format)
@@ -241,6 +280,12 @@ const aiEngine = {
         if (this.xaiKey) {
             var xaiAnswer = await this.xaiComplete(prompt, context, systemPrompt);
             if (xaiAnswer) return xaiAnswer;
+        }
+
+        // Groq fallback (free, fast)
+        if (this.groqKey) {
+            var groqAnswer = await this.groqComplete(prompt, context, systemPrompt);
+            if (groqAnswer) return groqAnswer;
         }
 
         // No Gemini key or Gemini failed — go to sandbox
