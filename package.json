@@ -1,0 +1,15 @@
+{
+  "name": "studysnap-ai",
+  "version": "1.0.0",
+  "description": "StudySnap AI - Complete Study Toolkit",
+  "main": "js/app.js",
+  "scripts": {
+    "start": "node server.ps1",
+    "dev": "echo 'Development server not available in this environment'"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^10.14.1"
+  }
+}

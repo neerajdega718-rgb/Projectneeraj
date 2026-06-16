@@ -1,0 +1,57 @@
+.fa-solid,
+.fa-regular {
+    display: inline-block;
+    width: 1em;
+    min-width: 1em;
+    text-align: center;
+    font-style: normal;
+    line-height: 1;
+}
+
+.fa-solid::before,
+.fa-regular::before {
+    content: "\2022";
+}
+
+.fa-house::before { content: "\2302"; }
+.fa-comments::before,
+.fa-message::before { content: "\1F4AC"; }
+.fa-clone::before { content: "\25A3"; }
+.fa-circle-question::before { content: "?"; }
+.fa-compass::before { content: "\25CE"; }
+.fa-gears::before { content: "\2699"; }
+.fa-graduation-cap::before { content: "\1F393"; }
+.fa-chart-line::before { content: "\2197"; }
+.fa-diagram-project::before { content: "\22C8"; }
+.fa-video::before { content: "\25B6"; }
+.fa-book-bookmark::before { content: "\1F516"; }
+.fa-gamepad::before { content: "\25C8"; }
+.fa-trophy::before { content: "\1F3C6"; }
+.fa-camera::before { content: "\25C9"; }
+.fa-paper-plane::before { content: "\27A4"; }
+.fa-square-plus::before { content: "+"; }
+.fa-file-pdf::before { content: "PDF"; font-size: .68em; font-weight: 800; }
+.fa-signature::before { content: "\270E"; }
+.fa-bolt::before { content: "\26A1"; }
+.fa-arrow-left::before { content: "\2190"; }
+.fa-xmark::before,
+.fa-circle-xmark::before { content: "\2715"; }
+.fa-check::before,
+.fa-circle-check::before { content: "\2713"; }
+.fa-circle::before { content: "\25CF"; }
+.fa-puzzle-piece::before { content: "\25A6"; }
+.fa-hourglass-start::before { content: "\231B"; }
+.fa-pen-nib::before,
+.fa-pen-fancy::before { content: "\270E"; }
+.fa-magnifying-glass::before { content: "\2315"; }
+.fa-award::before { content: "\2605"; }
+.fa-triangle-exclamation::before { content: "!"; font-weight: 800; }
+.fa-spinner::before { content: "\25CC"; }
+
+.fa-spin {
+    animation: faSpin 1s linear infinite;
+}
+
+@keyframes faSpin {
+    to { transform: rotate(360deg); }
+}

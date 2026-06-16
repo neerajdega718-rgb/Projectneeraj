@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>StudySnap AI — Complete Study Toolkit</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="icons.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body class="dark-theme">
+    
+    <div class="app-container">
+        <div class="phone-wrapper" id="app-shell">
+            <!-- Canvas Particle Engine Overlay -->
+            <canvas id="confetti-canvas"></canvas>
+
+            <!-- Splash / Loading Screen -->
+            <div class="splash-screen" id="splash-screen">
+                <div class="splash-sparkle s1">✦</div>
+                <div class="splash-sparkle s2">✦</div>
+                <div class="splash-sparkle s3">✦</div>
+                <div class="splash-sparkle s4">✦</div>
+                <div class="splash-sparkle s5">✦</div>
+                <div class="splash-sparkle s6">✦</div>
+                <div class="splash-sparkle s7">✦</div>
+                <div class="splash-sparkle s8">✦</div>
+                <div class="splash-content">
+                    <div class="splash-logo">
+                        <span class="splash-brain">🧠</span>
+                    </div>
+                    <div class="splash-icons">
+                        <span class="splash-icon bounce-1">📚</span>
+                        <span class="splash-icon bounce-2">✏️</span>
+                        <span class="splash-icon bounce-3">🎯</span>
+                        <span class="splash-icon bounce-4">🏆</span>
+                    </div>
+                    <div class="splash-title">StudySnap AI</div>
+                    <div class="splash-progress-wrapper">
+                        <div class="splash-progress-bar" id="splash-progress"></div>
+                    </div>
+                    <div class="splash-loading-text" id="splash-loading-text">Loading your study space...</div>
+                    <div class="splash-streak-badge">
+                        <span class="splash-fire">🔥</span>
+                        <span class="splash-streak-text">Study Streak Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onboarding Screens (First Launch) -->
+            <div class="onboarding-overlay" id="onboarding-overlay">
+                <div class="onboarding-container" id="onboarding-container">
+                    <div class="onboarding-slides" id="onboarding-slides">
+                        <!-- Screen 1: Welcome -->
+                        <div class="onboarding-slide active" data-index="0">
+                            <div class="onboarding-icon-wrap oi-welcome">
+                                <span class="onboarding-icon">🚀</span>
+                            </div>
+                            <h2 class="onboarding-title">Welcome to StudySnap AI!</h2>
+                            <p class="onboarding-desc">Your all-in-one study toolkit for CBSE, ICSE, JEE & NEET. Master every subject with smart AI-powered tools.</p>
+                            <div class="onboarding-badges">
+                                <span class="onboard-badge">CBSE</span>
+                                <span class="onboard-badge">ICSE</span>
+                                <span class="onboard-badge">JEE</span>
+                                <span class="onboard-badge">NEET</span>
+                            </div>
+                        </div>
+                        <!-- Screen 2: Homework Solver -->
+                        <div class="onboarding-slide" data-index="1">
+                            <div class="onboarding-icon-wrap oi-solver">
+                                <span class="onboarding-icon">🤖</span>
+                            </div>
+                            <h2 class="onboarding-title">AI Homework Solver</h2>
+                            <p class="onboarding-desc">Snap a photo or type your doubt — get step-by-step solutions instantly across all subjects.</p>
+                            <ul class="onboarding-features">
+                                <li>📸 Image-based doubt solving</li>
+                                <li>📝 Step-by-step explanations</li>
+                                <li>🧠 Multi-subject AI tutor</li>
+                            </ul>
+                        </div>
+                        <!-- Screen 3: Flashcards & Quizzes -->
+                        <div class="onboarding-slide" data-index="2">
+                            <div class="onboarding-icon-wrap oi-cards">
+                                <span class="onboarding-icon">📚</span>
+                            </div>
+                            <h2 class="onboarding-title">Flashcards & Quiz Generator</h2>
+                            <p class="onboarding-desc">Turn any topic into interactive flashcards and timed quizzes with AI-generated content.</p>
+                            <ul class="onboarding-features">
+                                <li>🔁 3D swipeable flashcards</li>
+                                <li>⏱️ Timed MCQ quizzes</li>
+                                <li>📊 Performance tracking</li>
+                            </ul>
+                        </div>
+                        <!-- Screen 4: Gamification -->
+                        <div class="onboarding-slide" data-index="3">
+                            <div class="onboarding-icon-wrap oi-gamification">
+                                <span class="onboarding-icon">🏆</span>
+                            </div>
+                            <h2 class="onboarding-title">Earn XP & Build Streaks</h2>
+                            <p class="onboarding-desc">Stay motivated with XP points, daily streaks, coins, badges, and leaderboards.</p>
+                            <div class="onboarding-preview-bar">
+                                <div class="opb-label">Level 1</div>
+                                <div class="opb-track">
+                                    <div class="opb-fill" style="width:65%"></div>
+                                </div>
+                                <div class="opb-label">Level 2</div>
+                            </div>
+                            <ul class="onboarding-features">
+                                <li>🔥 Daily streak rewards</li>
+                                <li>🪙 Earn coins for correct answers</li>
+                                <li>🏅 Unlock achievement badges</li>
+                            </ul>
+                        </div>
+                        <!-- Screen 5: Get Started -->
+                        <div class="onboarding-slide" data-index="4">
+                            <div class="onboarding-icon-wrap oi-start">
+                                <span class="onboarding-icon">🎉</span>
+                            </div>
+                            <h2 class="onboarding-title">Ready to Study Smarter?</h2>
+                            <p class="onboarding-desc">All core features are free — AI quizzes, flashcards, diagrams, formulas, and more. Upgrade anytime for premium AI content.</p>
+                            <div class="onboarding-plan-card">
+                                <div class="opc-badge">FREE</div>
+                                <div class="opc-features">
+                                    <span>✓ All study tools</span>
+                                    <span>✓ AI-powered content</span>
+                                    <span>✓ No credit card needed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Dot Navigation -->
+                    <div class="onboarding-dots" id="onboarding-dots">
+                        <span class="onboard-dot active" data-index="0"></span>
+                        <span class="onboard-dot" data-index="1"></span>
+                        <span class="onboard-dot" data-index="2"></span>
+                        <span class="onboard-dot" data-index="3"></span>
+                        <span class="onboard-dot" data-index="4"></span>
+                    </div>
+                    <!-- Buttons -->
+                    <div class="onboarding-buttons">
+                        <button class="onboarding-skip" id="onboarding-skip">Skip</button>
+                        <button class="onboarding-next" id="onboarding-next">Next →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Floating Drawer Overlay -->
+            <div class="overlay-modal" id="global-modal">
+                <div class="modal-content" id="modal-content-area">
+                    <!-- Dynamic modal content loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Top Header Profile & Streaks -->
+            <header class="app-header">
+                <div class="profile-bar">
+                    <div class="user-info">
+                        <div class="avatar-wrapper" onclick="app.showAuthModal()">
+                            <div class="avatar">👨‍🎓</div>
+                        </div>
+                        <div class="user-meta" onclick="app.showAuthModal()" style="cursor:pointer;">
+                            <h3 id="profile-name">Guest Scholar</h3>
+                            <span class="user-level" id="profile-level">Level 2 (Scholar)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-group">
+                        <div class="stat-pill streak" title="Study Streak" onclick="app.showStreakDetails()">
+                            <span class="streak-fire">🔥</span>
+                            <span id="stat-streak-val">3 d</span>
+                        </div>
+                        <div class="stat-pill coins" title="Study Coins" onclick="app.openCoinsShop()">
+                            <span>🪙</span>
+                            <span id="stat-coins-val">250</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xp-bar-container">
+                    <span>XP</span>
+                    <div class="xp-progress-outer">
+                        <div class="xp-progress-inner" id="xp-bar-fill"></div>
+                    </div>
+                    <span id="xp-text-ratio">250/500</span>
+                </div>
+
+                <!-- India Specific Syllabus Modes -->
+                <div class="mode-selector">
+                    <button class="mode-btn active" onclick="app.setStudyMode('standard')" id="mode-std">Standard</button>
+                    <button class="mode-btn" onclick="app.setStudyMode('cbse')" id="mode-cbse">CBSE & ICSE</button>
+                    <button class="mode-btn" onclick="app.setStudyMode('jee')" id="mode-jee">JEE & NEET</button>
+                </div>
+            </header>
+
+            <!-- Main Scrollable App Screen Containers -->
+            <main class="app-body" id="app-body-container">
+
+                <!-- SCREEN 1: DASHBOARD -->
+                <section class="screen active" id="screen-dashboard">
+                    <!-- Panic Mode Trigger Banner -->
+                    <div class="panic-banner" onclick="app.openPanicMode()">
+                        <div class="panic-info">
+                            <h4>🚨 10 PM Exam Panic Mode</h4>
+                            <p>Got an exam tomorrow? Get instant high-yield revision list.</p>
+                        </div>
+                        <button class="panic-btn">Revise</button>
+                    </div>
+
+                    <!-- Unique Board Section -->
+                    <div class="settings-group-box" id="board-helper-block" style="display:none;">
+                        <h4 style="font-size:13.5px;"><i class="fa-solid fa-graduation-cap" style="color:var(--accent-violet);"></i> India Syllabus Hub</h4>
+                        <p style="font-size:11px; color:var(--text-secondary);">Access Syllabus-specific NCERT questions and board examiner grades.</p>
+                        <button class="primary-btn" onclick="app.openNCERTExplorer()" style="padding:8px; font-size:12px;">Browse NCERT Solutions</button>
+                    </div>
+
+                    <!-- 3D Animated Book -->
+                    <div class="book-3d-container">
+                        <div class="book-3d">
+                            <div class="book-cover">StudySnap<br>AI</div>
+                            <div class="book-spine"></div>
+                            <div class="book-page"><div class="book-page-inner"><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div></div></div>
+                            <div class="book-page"><div class="book-page-inner"><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div></div></div>
+                            <div class="book-page"><div class="book-page-inner"><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div></div></div>
+                            <div class="book-page"><div class="book-page-inner"><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div><div class="page-line"></div></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Core Tools Quick Grid -->
+                    <h4 style="font-size:14px; margin-top:5px; font-family:var(--font-heading);">Study Tools</h4>
+                    <div class="quick-tools-grid">
+                        <div class="feature-card hw" onclick="app.changeTab('homework')">
+                            <div class="feature-icon-wrapper"><i class="fa-solid fa-message"></i></div>
+                            <h3>Homework Helper</h3>
+                            <p>WhatsApp style tutor chat</p>
+                        </div>
+                        <div class="feature-card flash" onclick="app.changeTab('flashcards')">
+                            <div class="feature-icon-wrapper"><i class="fa-solid fa-clone"></i></div>
+                            <h3>Smart Flashcards</h3>
+                            <p>3D card flip & spaced repetition</p>
+                        </div>
+                        <div class="feature-card quiz" onclick="app.changeTab('quizzes')">
+                            <div class="feature-icon-wrapper"><i class="fa-solid fa-circle-question"></i></div>
+                            <h3>Quiz Generator</h3>
+                            <p>Practice tests with live timers</p>
+                        </div>
+                        <div class="feature-card essay" onclick="app.changeTab('essay')">
+                            <div class="feature-icon-wrapper"><i class="fa-solid fa-pen-nib"></i></div>
+                            <h3>Essay Examiner</h3>
+                            <p>Strict grammar checking & scoring</p>
+                        </div>
+                    </div>
+
+                    <!-- Daily Challenge / Engagement Card -->
+                    <div class="settings-group-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4 style="font-size:13.5px;" id="goal-title-text">🎯 Daily Study Goal</h4>
+                            <span style="font-size:11px; color:var(--accent-green); font-weight:700;">+100 XP</span>
+                        </div>
+                        <p style="font-size:11px; color:var(--text-secondary); margin-top:2px;" id="goal-desc-text">Complete 1 quiz and flip 5 flashcards to secure your streak!</p>
+                        <div style="display:flex; gap:6px; margin-top:8px;">
+                            <div style="flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden;">
+                                <div id="goal-progress-inner" style="width:0%; height:100%; background:var(--accent-green); transition: width 0.4s ease;"></div>
+                            </div>
+                            <span id="goal-ratio-val" style="font-size:10px; font-weight:700; line-height:0.6;">0/6</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SCREEN 2: HOMEWORK HELPER -->
+                <section class="screen" id="screen-homework">
+                    <div class="chat-container">
+                        <div class="chat-tutor-banner">
+                            <div class="tutor-picker">
+                                <div class="tutor-avatar">🤖</div>
+                                <select class="tutor-select-dropdown" id="tutor-personality-select" onchange="homework.changePersonality()">
+                                    <option value="coach">Friendly Coach (Warm)</option>
+                                    <option value="buddy">Funny Buddy (Relatable)</option>
+                                </select>
+                            </div>
+                            <span style="font-size:10px; color:var(--accent-green); font-weight:700;"><i class="fa-solid fa-circle"></i> Online</span>
+                        </div>
+
+                        <!-- Chat messages container -->
+                        <div class="chat-history" id="chat-messages-container">
+                            <!-- Injected by JavaScript -->
+                        </div>
+
+                        <!-- Typing state simulator -->
+                        <div class="tutor-typing" id="tutor-typing-indicator" style="display:none;">
+                            <span style="margin-right:6px; color:var(--text-secondary);">Tutor is writing</span>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+
+                        <!-- Input Toolbar -->
+                        <div class="chat-input-bar">
+                            <div class="chat-input-container">
+                                <label class="chat-attachment-btn" title="Simulate Image Snap" for="hw-image-input">
+                                    <i class="fa-solid fa-camera"></i>
+                                </label>
+                                <input type="file" id="hw-image-input" accept="image/*" style="display:none;" onchange="homework.handleImageUpload(event)">
+                                <textarea class="chat-textarea" id="chat-user-input" placeholder="Type a doubt or upload a question..." onkeydown="homework.checkKey(event)"></textarea>
+                            </div>
+                            <button class="chat-send-btn" onclick="homework.sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SCREEN 3: SMART FLASHCARDS -->
+                <section class="screen" id="screen-flashcards">
+                    <!-- Deck Creator View -->
+                    <div class="deck-creation" id="flashcard-deck-creator">
+                        <h4 style="font-size:14px; font-family:var(--font-heading);"><i class="fa-solid fa-square-plus" style="color:var(--accent-violet);"></i> Generate Flashcard Deck</h4>
+                        <p style="font-size:11px; color:var(--text-secondary);">Paste revision notes, essays, or upload homework to instantly build 3D swiping flashcards.</p>
+                        
+                        <textarea id="flashcard-text-input" placeholder="Type or paste study materials (e.g. Chapter 4 Photosynthesis definitions...)"></textarea>
+                        
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                            <label class="deck-file-label" for="flashcard-pdf-input">
+                                <i class="fa-solid fa-file-pdf" style="color:var(--accent-red);"></i> Upload Notes (PDF)
+                            </label>
+                            <input type="file" id="flashcard-pdf-input" accept=".pdf,.txt" style="display:none;" onchange="flashcards.handlePdfUpload(event)">
+                            
+                            <label class="deck-file-label" for="flashcard-handwritten-input">
+                                <i class="fa-solid fa-signature" style="color:var(--accent-amber);"></i> Notes Photo
+                            </label>
+                            <input type="file" id="flashcard-handwritten-input" accept="image/*" style="display:none;" onchange="flashcards.handleHandwrittenUpload(event)">
+                        </div>
+
+                        <button class="primary-btn" onclick="flashcards.generateDeck()"><i class="fa-solid fa-bolt"></i> Generate 3D Deck</button>
+                    </div>
+
+                    <!-- Deck Session View (Active Study) -->
+                    <div class="card-session-container" id="flashcard-session-view" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; font-size:12px; font-weight:600;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <button class="back-action-btn" onclick="flashcards.resetSession()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                                <span style="color:var(--border); font-weight:300;">|</span>
+                                <span id="flashcard-deck-title">Chapter Notes</span>
+                            </div>
+                            <span id="flashcard-counter" style="color:var(--accent-violet);">1 / 5</span>
+                        </div>
+                        
+                        <div class="deck-progress-bar">
+                            <div class="deck-progress-inner" id="flashcard-progress-bar"></div>
+                        </div>
+
+                        <div class="card-deck-viewport">
+                            <div class="study-card" id="flashcard-main-card" onclick="flashcards.flipCard()">
+                                <div class="card-face front">
+                                    <span class="card-category" id="card-badge-cat">Science</span>
+                                    <p class="card-text" id="card-text-front">Question loading...</p>
+                                    <span class="card-tip">👆 Tap Card to Flip</span>
+                                </div>
+                                <div class="card-face back">
+                                    <span class="card-category" style="color:var(--accent-green)">Answer</span>
+                                    <p class="card-text" id="card-text-back">Answer loading...</p>
+                                    <span class="card-tip">Tap to show Question</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="swipe-actions">
+                            <button class="swipe-btn incorrect" onclick="flashcards.swipeCard(false)"><i class="fa-solid fa-xmark"></i> Study Again</button>
+                            <button class="swipe-btn correct" onclick="flashcards.swipeCard(true)"><i class="fa-solid fa-check"></i> Mastered</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SCREEN 4: TIMED QUIZ GENERATOR -->
+                <section class="screen" id="screen-quizzes">
+                    <!-- Quiz Scaffolder View -->
+                    <div class="deck-creation" id="quiz-builder-panel">
+                        <h4 style="font-size:14px; font-family:var(--font-heading);"><i class="fa-solid fa-hourglass-start" style="color:var(--accent-amber);"></i> Quick Timed Quiz</h4>
+                        <p style="font-size:11px; color:var(--text-secondary);">Input text or notes, and our AI will build an interactive 10-question timed multiple choice quiz.</p>
+                        
+                        <textarea id="quiz-source-notes" placeholder="Paste notes, textbook lines, or describe a topic (e.g. Chemical Reactions, Indian History Class 10...)"></textarea>
+                        
+                        <button class="primary-btn" onclick="quizzes.generateQuiz()" style="background:linear-gradient(135deg, var(--accent-amber), var(--accent-saffron)); box-shadow:0 4px 15px rgba(255,165,0,0.3);"><i class="fa-solid fa-puzzle-piece"></i> Create Quiz</button>
+                    </div>
+
+                    <!-- Quiz Active View -->
+                    <div class="quiz-question-box" id="quiz-active-panel" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                            <span class="quiz-subject-tag" id="quiz-subject-tag-val" style="margin:0;">Subject</span>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="quiz-timer-radial" style="position:relative; top:auto; right:auto; width:40px; height:40px;">
+                                    <svg class="quiz-timer-svg" width="40" height="40">
+                                        <circle class="quiz-timer-track" cx="20" cy="20" r="16"></circle>
+                                        <circle class="quiz-timer-bar" id="quiz-timer-dial" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="0"></circle>
+                                    </svg>
+                                    <span class="quiz-timer-text" id="quiz-timer-number" style="font-size:12px;">30</span>
+                                </div>
+                                <button class="back-action-btn" onclick="quizzes.resetQuiz()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                            </div>
+                        </div>
+
+                        <p class="quiz-q-text" id="quiz-question-text">Loading question...</p>
+
+                        <div class="quiz-options-list" id="quiz-options-holder">
+                            <!-- Options injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Quiz Report View -->
+                    <div class="deck-creation" id="quiz-report-panel" style="display:none; text-align:center; flex-direction:column; align-items:center; gap:12px;">
+                        <div style="display:flex; justify-content:flex-start; width:100%; margin-bottom:4px;">
+                            <button class="back-action-btn" onclick="quizzes.resetQuiz()"><i class="fa-solid fa-arrow-left"></i> Exit</button>
+                        </div>
+                        <span style="font-size:40px;">🏆</span>
+                        <h3 style="font-size:18px; font-family:var(--font-heading);" id="quiz-report-headline">Quiz Finished!</h3>
+                        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">You answered beautifully. Check your score details below.</p>
+                        
+                        <div style="font-size:32px; font-weight:800; font-family:var(--font-heading); color:var(--accent-amber);" id="quiz-final-score">
+                            8 / 10
+                        </div>
+
+                        <div class="settings-group-box" style="text-align:left; font-size:11.5px; margin-top:12px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span>Coins Earned:</span>
+                                <span style="color:var(--accent-amber); font-weight:700;">+30 🪙</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span>XP Gained:</span>
+                                <span style="color:var(--accent-green); font-weight:700;">+150 XP</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span>Streak Maintained:</span>
+                                <span style="color:var(--accent-saffron); font-weight:700;">Active 🔥</span>
+                            </div>
+                        </div>
+
+                        <button class="primary-btn" onclick="quizzes.restartQuiz()" style="margin-top:15px;">Practice Again</button>
+                    </div>
+                </section>
+
+                <!-- SCREEN 5: ESSAY CHECKER -->
+                <section class="screen" id="screen-essay">
+                    <div class="essay-editor-wrapper">
+                        <h4 style="font-size:14px; font-family:var(--font-heading);"><i class="fa-solid fa-pen-fancy" style="color:var(--accent-blue);"></i> Essay Grading & checker</h4>
+                        <p style="font-size:11px; color:var(--text-secondary);">Paste essays or papers below. We analyze grammar, coherence, and structure according to board guidelines.</p>
+                        
+                        <textarea class="essay-textarea" id="essay-text-input" placeholder="Type or paste essay content here (minimum 50 words)..."></textarea>
+                        
+                        <button class="primary-btn" onclick="essay.analyzeEssay()" style="background:linear-gradient(135deg, var(--accent-blue), var(--accent-violet)); box-shadow:0 4px 15px rgba(0, 150, 255, 0.3);"><i class="fa-solid fa-graduation-cap"></i> Grade Essay</button>
+                    </div>
+
+                    <!-- Grading Dashboard View -->
+                    <div id="essay-grades-dashboard" style="display:none; flex-direction:column; gap:16px;">
+                        <div style="display:flex; justify-content:flex-start; width:100%;">
+                            <button class="back-action-btn" onclick="essay.resetEssay()"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                        </div>
+                        <div class="grade-display-card">
+                            <div class="grade-text">
+                                <h3 style="font-size:16px;">Board Score Assessment</h3>
+                                <p style="font-size:10px; opacity:0.8;">Standardized examiner criteria match</p>
+                            </div>
+                            <div class="letter-grade-badge" id="essay-letter-grade">B+</div>
+                        </div>
+
+                        <div class="essay-grades-container">
+                            <div class="circular-score-card">
+                                <div class="circle-progress-box">
+                                    <svg width="60" height="60" style="transform: rotate(-90deg);">
+                                        <circle cx="30" cy="30" r="24" fill="none" stroke="var(--border)" stroke-width="4"></circle>
+                                        <circle id="score-circle-grammar" cx="30" cy="30" r="24" fill="none" stroke="var(--accent-green)" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.7" stroke-dashoffset="30"></circle>
+                                    </svg>
+                                    <span class="circle-score-val" id="score-val-grammar">80%</span>
+                                </div>
+                                <span style="font-size:10px; font-weight:700;">Grammar</span>
+                            </div>
+
+                            <div class="circular-score-card">
+                                <div class="circle-progress-box">
+                                    <svg width="60" height="60" style="transform: rotate(-90deg);">
+                                        <circle cx="30" cy="30" r="24" fill="none" stroke="var(--border)" stroke-width="4"></circle>
+                                        <circle id="score-circle-structure" cx="30" cy="30" r="24" fill="none" stroke="var(--accent-violet)" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.7" stroke-dashoffset="45"></circle>
+                                    </svg>
+                                    <span class="circle-score-val" id="score-val-structure">70%</span>
+                                </div>
+                                <span style="font-size:10px; font-weight:700;">Structure</span>
+                            </div>
+
+                            <div class="circular-score-card">
+                                <div class="circle-progress-box">
+                                    <svg width="60" height="60" style="transform: rotate(-90deg);">
+                                        <circle cx="30" cy="30" r="24" fill="none" stroke="var(--border)" stroke-width="4"></circle>
+                                        <circle id="score-circle-clarity" cx="30" cy="30" r="24" fill="none" stroke="var(--accent-blue)" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.7" stroke-dashoffset="15"></circle>
+                                    </svg>
+                                    <span class="circle-score-val" id="score-val-clarity">90%</span>
+                                </div>
+                                <span style="font-size:10px; font-weight:700;">Clarity</span>
+                            </div>
+                        </div>
+
+                        <!-- Editor Highlights list -->
+                        <div class="settings-group-box">
+                            <h4 style="font-size:13.5px;"><i class="fa-solid fa-magnifying-glass" style="color:var(--accent-red);"></i> Critical Sentence Corrections</h4>
+                            <div class="essay-feedback-container" id="essay-feedback-bullets">
+                                <!-- Bullet points injected dynamically -->
+                            </div>
+                        </div>
+
+                        <button class="primary-btn" onclick="essay.resetEssay()">Submit New Essay</button>
+                    </div>
+                </section>
+
+                <!-- SCREEN 6: EXTRA HUB TOOLS -->
+                <section class="screen" id="screen-hub">
+                    <div class="hub-tool-strip">
+                        
+                        <div class="strip-item" onclick="tools.openTool('predict')">
+                            <div class="strip-icon" style="background:var(--accent-red-light); color:var(--accent-red);">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>AI Exam Predictor</h4>
+                                <p>Syllabus weights & high probability questions</p>
+                            </div>
+                        </div>
+
+                        <div class="strip-item" onclick="tools.openTool('diagram')">
+                            <div class="strip-icon" style="background:var(--accent-violet-light); color:var(--accent-violet);">
+                                <i class="fa-solid fa-diagram-project"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>Diagram Generator</h4>
+                                <p>SVG study diagrams with labeled parts</p>
+                            </div>
+                        </div>
+
+                        <div class="strip-item" onclick="tools.openTool('formula')">
+                            <div class="strip-icon" style="background:var(--accent-violet-light); color:var(--accent-violet);">
+                                <i class="fa-solid fa-square-root-variable"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>Formula & Cheat Sheet</h4>
+                                <p>Math, Physics, Chemistry quick formulas</p>
+                            </div>
+                        </div>
+
+                        <div class="strip-item" onclick="tools.openTool('mistake')">
+                            <div class="strip-icon" style="background:var(--accent-green-light); color:var(--accent-green);">
+                                <i class="fa-solid fa-book-bookmark"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>Personal Mistake Book</h4>
+                                <p>Tracks historical slip-ups and triggers revision</p>
+                            </div>
+                        </div>
+
+                        <div class="strip-item" onclick="tools.openTool('challenge')">
+                            <div class="strip-icon" style="background:var(--accent-saffron-light); color:var(--accent-saffron);">
+                                <i class="fa-solid fa-gamepad"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>AI Challenge Mode</h4>
+                                <p>Syllabus practice problems to level up your XP</p>
+                            </div>
+                        </div>
+
+                        <div class="strip-item" onclick="tools.openTool('leaderboard')">
+                            <div class="strip-icon" style="background:var(--accent-blue-light); color:var(--accent-blue);">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>Weekly Leaderboard</h4>
+                                <p>Compete with peer scholars anonymously</p>
+                            </div>
+                        </div>
+
+                        <div class="strip-item" onclick="app.openSettings()">
+                            <div class="strip-icon" style="background:var(--accent-saffron-light); color:var(--accent-saffron);">
+                                <i class="fa-solid fa-gears"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>Settings & API Config</h4>
+                                <p>Toggle Theme, sound, and load custom Claude keys</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- Bottom Navigation Bar Icons -->
+            <nav class="bottom-nav">
+                <div class="nav-item active" onclick="app.changeTab('dashboard')" id="nav-dashboard">
+                    <div class="nav-icon"><i class="fa-solid fa-house"></i></div>
+                    <span class="nav-label">Home</span>
+                </div>
+                <div class="nav-item" onclick="app.changeTab('homework')" id="nav-homework">
+                    <div class="nav-icon"><i class="fa-solid fa-comments"></i></div>
+                    <span class="nav-label">Doubts</span>
+                </div>
+                <div class="nav-item" onclick="app.changeTab('flashcards')" id="nav-flashcards">
+                    <div class="nav-icon"><i class="fa-solid fa-clone"></i></div>
+                    <span class="nav-label">Cards</span>
+                </div>
+                <div class="nav-item" onclick="app.changeTab('quizzes')" id="nav-quizzes">
+                    <div class="nav-icon"><i class="fa-solid fa-circle-question"></i></div>
+                    <span class="nav-label">Quiz</span>
+                </div>
+                <div class="nav-item" onclick="app.changeTab('hub')" id="nav-hub">
+                    <div class="nav-icon"><i class="fa-solid fa-compass"></i></div>
+                    <span class="nav-label">Hub</span>
+                </div>
+                <div class="nav-item" onclick="app.openProModal()" id="nav-pro">
+                    <div class="nav-icon"><i class="fa-solid fa-crown" style="color:var(--accent-amber)"></i></div>
+                    <span class="nav-label">Pro</span>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+
+    <!-- Modular SPA scripts inclusion -->
+    <script src="js/utils.js"></script>
+    <script src="js/ai-engine.js"></script>
+    <script src="js/gamification.js"></script>
+    <script src="js/tools.js"></script>
+    <script src="js/homework.js"></script>
+    <script src="js/flashcards.js"></script>
+    <script src="js/quizzes.js"></script>
+    <script src="js/essay.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
