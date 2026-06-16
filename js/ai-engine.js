@@ -4,15 +4,13 @@
 
 const aiEngine = {
     apiKey: studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX' ? '' : (studySnapUtils.safeStorage.getItem('studysnap_openai_key') || ''),
-    sandboxMode: (!studySnapUtils.safeStorage.getItem('studysnap_openai_key') || studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX') && !studySnapUtils.safeStorage.getItem('studysnap_tavily_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_gemini_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
+    sandboxMode: (!studySnapUtils.safeStorage.getItem('studysnap_openai_key') || studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX') && !studySnapUtils.safeStorage.getItem('studysnap_tavily_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_gemini_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
     tavilyKey: studySnapUtils.safeStorage.getItem('studysnap_tavily_key', ''),
     tavilyMode: !!studySnapUtils.safeStorage.getItem('studysnap_tavily_key', ''),
     firecrawlKey: studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', ''),
     firecrawlMode: !!studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', ''),
     geminiKey: studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
     geminiMode: !!studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
-    xaiKey: studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
-    xaiMode: !!studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
     groqKey: studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
     groqMode: !!studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
 
@@ -51,14 +49,6 @@ const aiEngine = {
         this.geminiMode = !!cleanKey;
         studySnapUtils.safeStorage.setItem('studysnap_gemini_key', cleanKey);
         if (!this.apiKey) this.sandboxMode = !this.geminiMode;
-    },
-
-    setXaiKey(key) {
-        const cleanKey = key ? key.trim() : '';
-        this.xaiKey = cleanKey;
-        this.xaiMode = !!cleanKey;
-        studySnapUtils.safeStorage.setItem('studysnap_xai_key', cleanKey);
-        if (!this.apiKey && !this.geminiKey) this.sandboxMode = !this.xaiMode;
     },
 
     setGroqKey(key) {
@@ -190,36 +180,6 @@ const aiEngine = {
         return null;
     },
 
-    async xaiComplete(prompt, context, systemPrompt) {
-        if (!this.xaiKey) return null;
-        var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
-        console.log('xAI: sending request');
-        try {
-            var res = await fetch('https://api.x.ai/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + this.xaiKey },
-                body: JSON.stringify({
-                    model: 'grok-3-mini-latest',
-                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: (context ? 'Context:\n' + context + '\n\n' : '') + prompt }],
-                    max_tokens: 8192,
-                    temperature: 0.7
-                })
-            });
-            console.log('xAI: status=' + res.status);
-            if (!res.ok) {
-                var errBody = await res.text();
-                console.warn('xAI failed:', res.status, errBody.substring(0, 200));
-                return null;
-            }
-            var d = await res.json();
-            if (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) {
-                console.log('xAI: SUCCESS');
-                return d.choices[0].message.content;
-            }
-        } catch(e) { console.warn('xAI error:', e.message); }
-        return null;
-    },
-
     async groqComplete(prompt, context, systemPrompt) {
         if (!this.groqKey) return null;
         var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
@@ -287,12 +247,6 @@ const aiEngine = {
         if (this.geminiKey) {
             var geminiAnswer = await this.geminiComplete(prompt, context, systemPrompt);
             if (geminiAnswer) return geminiAnswer;
-        }
-
-        // xAI (Grok) fallback
-        if (this.xaiKey) {
-            var xaiAnswer = await this.xaiComplete(prompt, context, systemPrompt);
-            if (xaiAnswer) return xaiAnswer;
         }
 
         // Groq fallback (free, fast)
