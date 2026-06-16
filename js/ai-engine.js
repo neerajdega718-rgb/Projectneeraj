@@ -220,7 +220,12 @@ const aiEngine = {
                 "Hi! Got any doubts? I can help with JEE/NEET/CBSE topics!",
                 "What's up! Want to solve some problems or learn a new concept?",
                 "Hello! Ask me anything from your syllabus!",
-                "Hey! Need help with homework? Just type your question!"
+                "Hey! Need help with homework? Just type your question!",
+                "Yo! Let's crush some study problems together!",
+                "Namaste! What subject shall we tackle today?",
+                "Hey! Ready for some learning? Ask me anything!",
+                "Hi there! What topic do you need help with?",
+                "Hello! I'm here to help you study. What's your question?"
             ];
             return responses[Math.floor(Math.random() * responses.length)];
         }
