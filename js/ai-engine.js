@@ -252,6 +252,19 @@ const aiEngine = {
 
     /* General wrapper to get completion */
     async getCompletion(prompt, systemPrompt = "You are a helpful student tutor.") {
+        const query = prompt.toLowerCase().trim();
+        const casualReplies = ["wow", "ok", "okay", "cool", "nice", "great", "awesome", "thanks", "thank you", "bye", "goodbye", "haha", "lol", "omg", "no", "yes", "yeah", "yep", "nope", "sure", "fine", "good", "bad", "sad", "happy", "love", "hate", "hmm", "oh", "ah", "um", "uh", "sup", "bro", "dude", "k", "kk", "nyc", "thx", "ty", "gn", "gm"];
+        if (!systemPrompt.includes("JSON") && casualReplies.includes(query)) {
+            const responses = [
+                "Hey there! Ready to study something? Ask me about Physics, Chemistry, Math, or Biology!",
+                "Hi! Got any doubts? I can help with JEE/NEET/CBSE topics!",
+                "What's up! Want to solve some problems or learn a new concept?",
+                "Hello! Ask me anything from your syllabus!",
+                "Hey! Need help with homework? Just type your question!"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
         // For flashcard/quiz/essay, always use sandbox (needs strict JSON format)
         if (systemPrompt.includes("flashcard") || systemPrompt.includes("quiz") || systemPrompt.includes("essay") || systemPrompt.includes("JSON") || systemPrompt.includes("board examiner")) {
             return this.generateSandboxResponse(prompt, systemPrompt);
