@@ -4,13 +4,15 @@
 
 const aiEngine = {
     apiKey: studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX' ? '' : (studySnapUtils.safeStorage.getItem('studysnap_openai_key') || ''),
-    sandboxMode: (!studySnapUtils.safeStorage.getItem('studysnap_openai_key') || studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX') && !studySnapUtils.safeStorage.getItem('studysnap_tavily_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
+    sandboxMode: (!studySnapUtils.safeStorage.getItem('studysnap_openai_key') || studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX') && !studySnapUtils.safeStorage.getItem('studysnap_tavily_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_gemini_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
     tavilyKey: studySnapUtils.safeStorage.getItem('studysnap_tavily_key', ''),
     tavilyMode: !!studySnapUtils.safeStorage.getItem('studysnap_tavily_key', ''),
     firecrawlKey: studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', ''),
     firecrawlMode: !!studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', ''),
     geminiKey: studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
     geminiMode: !!studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
+    xaiKey: studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
+    xaiMode: !!studySnapUtils.safeStorage.getItem('studysnap_xai_key', ''),
 
     setApiKey(key) {
         const cleanKey = key ? key.trim() : '';
@@ -47,6 +49,14 @@ const aiEngine = {
         this.geminiMode = !!cleanKey;
         studySnapUtils.safeStorage.setItem('studysnap_gemini_key', cleanKey);
         if (!this.apiKey) this.sandboxMode = !this.geminiMode;
+    },
+
+    setXaiKey(key) {
+        const cleanKey = key ? key.trim() : '';
+        this.xaiKey = cleanKey;
+        this.xaiMode = !!cleanKey;
+        studySnapUtils.safeStorage.setItem('studysnap_xai_key', cleanKey);
+        if (!this.apiKey && !this.geminiKey) this.sandboxMode = !this.xaiMode;
     },
 
     async tavilySearch(query) {
@@ -127,74 +137,114 @@ const aiEngine = {
     },
 
     async geminiComplete(prompt, context, systemPrompt) {
-        if (!this.geminiKey) { console.warn('Gemini: no key'); return null; }
+        if (!this.geminiKey) { console.warn('Gemini: no key set'); return null; }
         var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
-        console.log('Gemini: sending request');
-        var models = ['gemini-1.5-flash', 'models/gemini-1.5-flash', 'gemini-pro'];
+        console.log('Gemini: key length=' + this.geminiKey.length);
+        var models = ['gemini-2.0-flash', 'gemini-2.0-flash-lite'];
         for (var m = 0; m < models.length; m++) {
             try {
-                var res = await fetch('https://generativelanguage.googleapis.com/v1/models/' + models[m] + ':generateContent?key=' + this.geminiKey, {
+                console.log('Gemini: trying model ' + models[m]);
+                var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[m] + ':generateContent?key=' + this.geminiKey, {
                     method: 'POST', headers: { 'content-type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: fullPrompt }] }],
                         generationConfig: { maxOutputTokens: 8192, temperature: 0.7 }
                     })
                 });
-                if (!res.ok) { console.warn('Gemini model', models[m], 'failed:', res.status); continue; }
+                console.log('Gemini: status=' + res.status + ' model=' + models[m]);
+                if (res.status === 429) {
+                    console.warn('Gemini: rate limited on ' + models[m] + ', waiting 5s...');
+                    await new Promise(function(r) { setTimeout(r, 5000); });
+                    res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[m] + ':generateContent?key=' + this.geminiKey, {
+                        method: 'POST', headers: { 'content-type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: fullPrompt }] }],
+                            generationConfig: { maxOutputTokens: 8192, temperature: 0.7 }
+                        })
+                    });
+                    console.log('Gemini: retry status=' + res.status);
+                }
+                if (!res.ok) { 
+                    var errBody = await res.text();
+                    console.warn('Gemini ' + models[m] + ' failed:', res.status); 
+                    if (res.status === 429) { console.warn('Gemini: rate limited — all models will fail, stopping.'); break; }
+                    continue; 
+                }
                 var d = await res.json();
                 if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) {
                     var answer = d.candidates[0].content.parts.map(function(p) { return p.text; }).join('');
-                    if (answer) return answer;
+                    if (answer) { console.log('Gemini: SUCCESS with ' + models[m]); return answer; }
                 }
-            } catch(e) { console.warn('Gemini model', models[m], 'error:', e); }
+            } catch(e) { console.warn('Gemini ' + models[m] + ' error:', e.message); }
         }
         console.warn('Gemini: all models failed');
         return null;
     },
 
+    async xaiComplete(prompt, context, systemPrompt) {
+        if (!this.xaiKey) return null;
+        var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
+        console.log('xAI: sending request');
+        try {
+            var res = await fetch('https://api.x.ai/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + this.xaiKey },
+                body: JSON.stringify({
+                    model: 'grok-3-mini-latest',
+                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: (context ? 'Context:\n' + context + '\n\n' : '') + prompt }],
+                    max_tokens: 8192,
+                    temperature: 0.7
+                })
+            });
+            console.log('xAI: status=' + res.status);
+            if (!res.ok) {
+                var errBody = await res.text();
+                console.warn('xAI failed:', res.status, errBody.substring(0, 200));
+                return null;
+            }
+            var d = await res.json();
+            if (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) {
+                console.log('xAI: SUCCESS');
+                return d.choices[0].message.content;
+            }
+        } catch(e) { console.warn('xAI error:', e.message); }
+        return null;
+    },
+
     /* General wrapper to get completion */
     async getCompletion(prompt, systemPrompt = "You are a helpful student tutor.") {
-        // Gemini direct (no RAG context — simpler, more reliable)
+        // For flashcard/quiz/essay, always use sandbox (needs strict JSON format)
+        if (systemPrompt.includes("flashcard") || systemPrompt.includes("quiz") || systemPrompt.includes("essay") || systemPrompt.includes("JSON") || systemPrompt.includes("board examiner")) {
+            return this.generateSandboxResponse(prompt, systemPrompt);
+        }
+
+        // Get context from Tavily/FireCrawl for better answers
+        var context = '';
+        try {
+            if (this.tavilyKey) {
+                var tavilyResult = await this.tavilySearch(prompt);
+                if (tavilyResult) context += 'Web search results:\n' + tavilyResult + '\n\n';
+            }
+            if (this.firecrawlKey && !context) {
+                var fcResult = await this.firecrawlSearch(prompt);
+                if (fcResult) context += 'Web scrape results:\n' + fcResult + '\n\n';
+            }
+        } catch(e) { console.warn('RAG context fetch error:', e); }
+
+        // Gemini with context
         if (this.geminiKey) {
-            var geminiAnswer = await this.geminiComplete(prompt, '', systemPrompt);
+            var geminiAnswer = await this.geminiComplete(prompt, context, systemPrompt);
             if (geminiAnswer) return geminiAnswer;
         }
 
-        // Gemini failed — go to sandbox
-        if (this.sandboxMode) {
-            return this.generateSandboxResponse(prompt, systemPrompt);
+        // xAI (Grok) fallback
+        if (this.xaiKey) {
+            var xaiAnswer = await this.xaiComplete(prompt, context, systemPrompt);
+            if (xaiAnswer) return xaiAnswer;
         }
 
-        try {
-            const body = JSON.stringify({
-                model: "gpt-4o-mini",
-                max_tokens: 1500,
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: prompt }
-                ]
-            });
-
-            const response = await fetch('http://localhost:8001/api/chat', {
-                method: 'POST',
-                headers: {
-                    'x-api-key': this.apiKey,
-                    'content-type': 'application/json'
-                },
-                body: body
-            });
-
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.error?.message || 'API request failed');
-            }
-
-            const data = await response.json();
-            return data.choices[0].message.content;
-        } catch (error) {
-            console.warn('OpenAI API Error, falling back to Sandbox:', error);
-            return this.generateSandboxResponse(prompt, systemPrompt);
-        }
+        // No Gemini key or Gemini failed — go to sandbox
+        return this.generateSandboxResponse(prompt, systemPrompt);
     },
 
     /* Advanced Sandbox Generative Engine */
@@ -215,6 +265,10 @@ const aiEngine = {
 
         if (query.includes("youtube.com") || query.includes("youtu.be")) {
             return this.mockYoutubeSummary(prompt);
+        }
+
+        if (query.includes("timetable") || query.includes("time table") || query.includes("schedule") || query.includes("study plan") || (query.includes("study") && (query.includes("routine") || query.includes("daily") || query.includes("weekly") || query.includes("hour")))) {
+            return this.mockTimetableResponse(prompt);
         }
 
         const mathPattern = /^[0-9+\-*/().\s=<>]+$/;
@@ -253,6 +307,18 @@ const aiEngine = {
             return `### 📚 Subject: General Study\n**Welcome to StudySnap AI!**\n\nHello! I am your AI Study Tutor. Ask me any math problem, science question, or syllabus concept, and let's solve it step-by-step together! What are we studying today?\n\n` +
                    `---DIDYOUKNOW---\n💡 **Did You Know?** Talking to yourself out loud while studying can improve memory retention by up to 22%!\n\n` +
                    `---CHALLENGE---\n{"question": "", "options": [], "correct": 0}`;
+        }
+
+        const casualReplies = ["wow", "ok", "okay", "cool", "nice", "great", "awesome", "thanks", "thank you", "bye", "goodbye", "haha", "lol", "omg", "no", "yes", "yeah", "yep", "nope", "sure", "fine", "good", "bad", "sad", "happy", "love", "hate", "what", "why", "how", "who", "when", "where", "hmm", "oh", "ah", "um", "uh", "hey", "sup", "bro", "dude"];
+        if (!systemPrompt.includes("JSON") && casualReplies.includes(query.trim())) {
+            const responses = [
+                `Hey there! 😊 Ready to study something awesome? Ask me about Physics, Chemistry, Math, or Biology!`,
+                `Hi! I'm your study buddy. Got any doubts? I can help with JEE/NEET/CBSE topics! 📚`,
+                `What's up! Want to solve some problems or learn a new concept? I'm here to help! 🎯`,
+                `Hello! Ask me anything from your syllabus — Newton's laws, chemical reactions, calculus, or cell biology!`,
+                `Hey! Need help with homework? Just type your question and I'll break it down step by step! 💡`
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
         }
 
         const chapterMatch = this.detectChapter(query);
@@ -587,6 +653,7 @@ const aiEngine = {
             { name: "sets", subject: "Mathematics", chapter: "Sets", keywords: ["sets", "union", "intersection", "subset", "venn diagram", "complement", "power set"] },
             { name: "matrices", subject: "Mathematics", chapter: "Matrices", keywords: ["matrices", "matrix", "determinant", "adjoint", "inverse", "transpose"] },
             { name: "calculus", subject: "Mathematics", chapter: "Calculus", keywords: ["calculus", "derivative", "differentiation", "integration", "integral", "limit", "continuity"] },
+            { name: "analytic geometry", subject: "Mathematics", chapter: "Analytic Geometry & Curves", keywords: ["curve", "tangent to curve", "normal to curve", "tangent at point", "normal at point", "slope of tangent", "slope of normal", "geometric progression", "series sum", "infinity", "infinite series", "coordinates of point", "distance from origin"] },
             { name: "vectors", subject: "Mathematics", chapter: "Vector Algebra", keywords: ["vector", "scalar", "dot product", "cross product"] },
 
             { name: "motion", subject: "Physics", chapter: "Motion", keywords: ["motion", "distance", "displacement", "speed", "velocity", "acceleration", "graph"] },
@@ -2069,5 +2136,49 @@ const aiEngine = {
                `- **Practical Example Exercises**: Three past year questions (PYQs) are solved on the blackboard showing exact marking point schemes.\n\n` +
                `💡 **Study Tip**: We have auto-loaded these video summary points into your flashcard module! Navigate to the 'Cards' tab to begin active recall testing.`;
     },
+
+    /* Mock Timetable/Schedule Generator */
+    mockTimetableResponse(prompt) {
+        const query = prompt.toLowerCase();
+        let exam = 'JEE';
+        let subjects = ['Physics', 'Chemistry', 'Mathematics'];
+        if (query.includes('neet')) { exam = 'NEET'; subjects = ['Physics', 'Chemistry', 'Biology']; }
+        else if (query.includes('cbse')) { exam = 'CBSE'; subjects = ['Science', 'Mathematics', 'Social Science']; }
+
+        return `### 📚 Subject: Study Planning\n**${exam} Study Timetable**\n\n` +
+               `Here is a detailed **hour-by-hour** ${exam} study schedule:\n\n` +
+               `**🕐 Morning Block (5:00 AM – 12:00 PM)**\n` +
+               `| Time | Subject | Activity |\n|------|---------|----------|\n` +
+               `| 5:00 – 5:30 AM | Wake Up | Freshen up, light exercise |\n` +
+               `| 5:30 – 7:30 AM | ${subjects[0]} | Theory + Numericals (Freshest mind — hardest subject first) |\n` +
+               `| 7:30 – 8:00 AM | Break | Breakfast + short walk |\n` +
+               `| 8:00 – 10:00 AM | ${subjects[1]} | Concepts + Reactions/Formulas |\n` +
+               `| 10:00 – 10:15 AM | Break | Snack + hydrate |\n` +
+               `| 10:15 AM – 12:15 PM | ${subjects[2]} | Problem Practice + Previous Year Questions |\n\n` +
+               `**🕑 Afternoon Block (12:30 PM – 5:00 PM)**\n` +
+               `| Time | Subject | Activity |\n|------|---------|----------|\n` +
+               `| 12:30 – 1:30 PM | Lunch + Rest | Power nap (20 min max) |\n` +
+               `| 1:30 – 3:30 PM | ${subjects[0]} | Revision + Short Notes |\n` +
+               `| 3:30 – 5:00 PM | ${subjects[1]} | MCQ Practice + DPP |\n\n` +
+               `**🕔 Evening Block (5:00 PM – 10:00 PM)**\n` +
+               `| Time | Subject | Activity |\n|------|---------|----------|\n` +
+               `| 5:00 – 5:30 PM | Break | Walk / music / refresh |\n` +
+               `| 5:30 – 7:30 PM | ${subjects[2]} | Advanced Problems |\n` +
+               `| 7:30 – 8:30 PM | Dinner + Family | Relax |\n` +
+               `| 8:30 – 10:00 PM | Weak Subject | Focus on lowest-scoring topic |\n` +
+               `| 10:00 – 10:30 PM | Daily Recap | Revise formulas + sticky notes |\n` +
+               `| 10:30 PM | Sleep | 6.5–7 hrs minimum |\n\n` +
+               `**📋 Weekly Targets:**\n` +
+               `- **Mon–Fri**: Follow full timetable above\n` +
+               `- **Saturday**: Full-length mock test (3 hrs) + analysis\n` +
+               `- **Sunday**: Revision of the week + formula sheet update\n\n` +
+               `**💡 Key Rules:**\n` +
+               `1. Never skip the **5:30 AM** slot — it's your highest-retention window\n` +
+               `2. Solve at least **30 MCQs** daily per subject\n` +
+               `3. Maintain an **error notebook** — review it every Sunday\n` +
+               `4. Use **Pomodoro** (25 min focus + 5 min break) within each block\n\n` +
+               `---DIDYOUKNOW---\n💡 **Did You Know?** Top AIR-1 rankers study 12–14 hours daily but with **structured breaks** — not continuous cramming!\n\n` +
+               `---CHALLENGE---\n{"question": "What is the recommended daily study hours for JEE/NEET toppers?", "options": ["6-8 hours", "8-10 hours", "12-14 hours", "15+ hours"], "correct": 2}`;
+    }
 
 };

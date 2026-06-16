@@ -20,7 +20,10 @@ const app = {
             aiEngine.setFirecrawlKey('fc-4a6d551ae971424e91466258a3e6c506');
         }
         if (!studySnapUtils.safeStorage.getItem('studysnap_gemini_key')) {
-            aiEngine.setGeminiKey('AQ.Ab8RN6Kwba1XP0dZEgYFqxVyVotNcoWVSektaoEiUAJ5MXvp1w');
+            aiEngine.setGeminiKey('');
+        }
+        if (!studySnapUtils.safeStorage.getItem('studysnap_xai_key')) {
+            aiEngine.setXaiKey('');
         }
 
         // Initialize Firebase Auth state listener
@@ -279,9 +282,16 @@ const app = {
 
             <div class="settings-group-box">
                 <h4 style="font-size:12.5px;">🧠 Gemini AI API Key</h4>
-                <p style="font-size:10px; color:var(--text-secondary);">Primary LLM for RAG — generates answers using web context. Free at makersuite.google.com.</p>
+                <p style="font-size:10px; color:var(--text-secondary);">Primary LLM — generates answers using web context. Free at makersuite.google.com.</p>
                 <input class="settings-input" type="password" id="settings-gemini-input" placeholder="Enter Gemini API Key..." value="${aiEngine.geminiKey}">
                 <button class="primary-btn" onclick="app.saveGeminiKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
+            </div>
+
+            <div class="settings-group-box">
+                <h4 style="font-size:12.5px;">🚀 xAI (Grok) API Key</h4>
+                <p style="font-size:10px; color:var(--text-secondary);">Fallback when Gemini is rate-limited. Free at console.x.ai.</p>
+                <input class="settings-input" type="password" id="settings-xai-input" placeholder="Enter xAI API Key..." value="${aiEngine.xaiKey}">
+                <button class="primary-btn" onclick="app.saveXaiKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
             </div>
 
             <div class="settings-group-box">
@@ -296,13 +306,6 @@ const app = {
                 <p style="font-size:10px; color:var(--text-secondary);">Secondary context source when Tavily has no answer. Free at firecrawl.dev.</p>
                 <input class="settings-input" type="password" id="settings-fc-input" placeholder="Enter FireCrawl API Key..." value="${aiEngine.firecrawlKey}">
                 <button class="primary-btn" onclick="app.saveFirecrawlKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
-            </div>
-
-            <div class="settings-group-box">
-                <h4 style="font-size:12.5px;">🧠 Gemini AI API Key</h4>
-                <p style="font-size:10px; color:var(--text-secondary);">Primary LLM for RAG — generates answers using web context. Free at makersuite.google.com. Overrides Tavily/FireCrawl.</p>
-                <input class="settings-input" type="password" id="settings-gemini-input" placeholder="Enter Gemini API Key..." value="${aiEngine.geminiKey}">
-                <button class="primary-btn" onclick="app.saveGeminiKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
             </div>
 
             <div class="settings-group-box" style="font-size:13px;">
@@ -359,6 +362,13 @@ const app = {
         const key = document.getElementById('settings-gemini-input').value.trim();
         aiEngine.setGeminiKey(key);
         alert(key ? "Gemini API Key loaded! AI answers enabled." : "Gemini key cleared.");
+        this.closeModal();
+    },
+
+    saveXaiKey() {
+        const key = document.getElementById('settings-xai-input').value.trim();
+        aiEngine.setXaiKey(key);
+        alert(key ? "xAI (Grok) API Key loaded! Fallback enabled." : "xAI key cleared.");
         this.closeModal();
     },
 
