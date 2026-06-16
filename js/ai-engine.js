@@ -229,7 +229,7 @@ const aiEngine = {
                 method: 'POST',
                 headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + this.groqKey },
                 body: JSON.stringify({
-                    model: 'llama-3.1-70b-versatile',
+                    model: 'llama-3.3-70b-versatile',
                     messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: (context ? 'Context:\n' + context + '\n\n' : '') + prompt }],
                     max_tokens: 8192,
                     temperature: 0.7
