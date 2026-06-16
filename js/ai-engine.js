@@ -213,7 +213,7 @@ const aiEngine = {
     /* General wrapper to get completion */
     async getCompletion(prompt, systemPrompt = "You are a helpful student tutor.") {
         const query = prompt.toLowerCase().trim();
-        const casualReplies = ["hi", "hello", "hey", "yo", "namaste", "hola", "wow", "ok", "okay", "cool", "nice", "great", "awesome", "thanks", "thank you", "bye", "goodbye", "haha", "lol", "omg", "no", "yes", "yeah", "yep", "nope", "sure", "fine", "good", "bad", "sad", "happy", "love", "hate", "hmm", "oh", "ah", "um", "uh", "sup", "bro", "dude", "k", "kk", "nyc", "thx", "ty", "gn", "gm"];
+        const casualReplies = ["hi", "hello", "hey", "yo", "namaste", "hola", "wow", "ok", "okay", "cool", "nice", "great", "awesome", "thanks", "thank you", "bye", "goodbye", "haha", "lol", "omg", "no", "yes", "yeah", "yep", "nope", "sure", "fine", "good", "bad", "sad", "happy", "love", "hate", "hmm", "oh", "ah", "um", "uh", "sup", "bro", "dude", "k", "kk", "nyc", "thx", "ty", "gn", "gm", "wait", "what", "huh", "nah", "yup", "true", "false", "maybe", "idk", "brb", "np", "welcome", "congrats", "congratulations", "rip", "wow", "oops", "damn", "cya", "peace", "byebye", "tysm", "appreciate"];
         if (!systemPrompt.includes("JSON") && casualReplies.includes(query)) {
             const responses = [
                 "Hey there! Ready to study something? Ask me about Physics, Chemistry, Math, or Biology!",
