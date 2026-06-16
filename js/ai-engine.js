@@ -216,16 +216,16 @@ const aiEngine = {
         const casualReplies = ["hi", "hello", "hey", "yo", "namaste", "hola", "wow", "ok", "okay", "cool", "nice", "great", "awesome", "thanks", "thank you", "bye", "goodbye", "haha", "lol", "omg", "no", "yes", "yeah", "yep", "nope", "sure", "fine", "good", "bad", "sad", "happy", "love", "hate", "hmm", "oh", "ah", "um", "uh", "sup", "bro", "dude", "k", "kk", "nyc", "thx", "ty", "gn", "gm", "wait", "what", "huh", "nah", "yup", "true", "false", "maybe", "idk", "brb", "np", "welcome", "congrats", "congratulations", "rip", "wow", "oops", "damn", "cya", "peace", "byebye", "tysm", "appreciate"];
         if (!systemPrompt.includes("JSON") && casualReplies.includes(query)) {
             const responses = [
-                "Hey there! Ready to study something? Ask me about Physics, Chemistry, Math, or Biology!",
-                "Hi! Got any doubts? I can help with JEE/NEET/CBSE topics!",
-                "What's up! Want to solve some problems or learn a new concept?",
-                "Hello! Ask me anything from your syllabus!",
-                "Hey! Need help with homework? Just type your question!",
-                "Yo! Let's crush some study problems together!",
-                "Namaste! What subject shall we tackle today?",
-                "Hey! Ready for some learning? Ask me anything!",
-                "Hi there! What topic do you need help with?",
-                "Hello! I'm here to help you study. What's your question?"
+                "Hey! 😊",
+                "Hi there! 👋",
+                "What's up!",
+                "Yo! 👋",
+                "Sup!",
+                "Hey! Ready to study?",
+                "Hi! Got a doubt?",
+                "Hello! Ask me anything!",
+                "Yo! What do you need?",
+                "Hey! 🙌"
             ];
             return responses[Math.floor(Math.random() * responses.length)];
         }
