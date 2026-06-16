@@ -288,6 +288,10 @@ const aiEngine = {
             return this.mockTimetableResponse(prompt);
         }
 
+        if ((query.includes("pipe") || query.includes("tank")) && (query.includes("fill") || query.includes("empty") || query.includes("hour"))) {
+            return this.solvePipeTankProblem(prompt);
+        }
+
         const mathPattern = /^[0-9+\-*/().\s=<>]+$/;
         if (!systemPrompt.includes("JSON") && mathPattern.test(prompt.trim()) && prompt.trim().length > 0) {
             // Handle equation with '=' sign first
@@ -2196,6 +2200,87 @@ const aiEngine = {
                `4. Use **Pomodoro** (25 min focus + 5 min break) within each block\n\n` +
                `---DIDYOUKNOW---\n💡 **Did You Know?** Top AIR-1 rankers study 12–14 hours daily but with **structured breaks** — not continuous cramming!\n\n` +
                `---CHALLENGE---\n{"question": "What is the recommended daily study hours for JEE/NEET toppers?", "options": ["6-8 hours", "8-10 hours", "12-14 hours", "15+ hours"], "correct": 2}`;
+    },
+
+    solvePipeTankProblem(prompt) {
+        const numbers = prompt.match(/\d+(\.\d+)?/g);
+        if (!numbers || numbers.length < 3) {
+            return `### 📚 Subject: Mathematics — Pipes & Tanks\n\nI can solve pipe/tank problems! Please provide the times for each pipe.\n\n**Example:** "Pipe A fills in 4 hours, Pipe B fills in 6 hours, Pipe C empties in 3 hours"\n\n` +
+                   `---DIDYOUKNOW---\n💡 Pipe problems use **rate per hour** = 1/time. Inlet pipes add (+), outlet pipes subtract (−).\n\n` +
+                   `---CHALLENGE---\n{"question": "If Pipe A fills a tank in 5 hours, what fraction does it fill per hour?", "options": ["1/5", "1/4", "5", "1/25"], "correct": 0}`;
+        }
+
+        const times = numbers.map(Number);
+        const lower = prompt.toLowerCase();
+        
+        let inlets = [];
+        let outlets = [];
+        let inletIdx = 0;
+        let outletIdx = 0;
+        
+        const sentences = prompt.split(/[.,;]/);
+        for (const s of sentences) {
+            const sl = s.toLowerCase();
+            const num = s.match(/\d+(\.\d+)?/);
+            if (!num) continue;
+            const val = parseFloat(num[0]);
+            if (sl.includes("empty") || sl.includes("drain") || sl.includes("outlet") || sl.includes("leak")) {
+                outlets.push(val);
+            } else {
+                inlets.push(val);
+            }
+        }
+        
+        if (inlets.length === 0 && numbers.length >= 2) {
+            inlets = [parseFloat(numbers[0]), parseFloat(numbers[1])];
+            if (numbers.length >= 3) outlets.push(parseFloat(numbers[2]));
+        }
+        
+        let netRate = 0;
+        let steps = [];
+        
+        for (const t of inlets) {
+            const rate = 1 / t;
+            netRate += rate;
+            steps.push(`Inlet (fills in ${t} hrs): +1/${t} = +${rate.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} per hour`);
+        }
+        for (const t of outlets) {
+            const rate = 1 / t;
+            netRate -= rate;
+            steps.push(`Outlet (empties in ${t} hrs): −1/${t} = −${rate.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} per hour`);
+        }
+        
+        if (netRate <= 0) {
+            return `### 📚 Subject: Mathematics — Pipes & Tanks\n**Problem Solved Step-by-Step**\n\n` +
+                   steps.map((s, i) => `${i + 1}. ${s}`).join('\n') + '\n\n' +
+                   `**Net rate = ${netRate.toFixed(6)} per hour**\n\n` +
+                   `⚠️ **The tank will NEVER fill!** The outlet drains faster than the inlets can fill.\n\n` +
+                   `---DIDYOUKNOW---\n💡 If net rate ≤ 0, the tank either drains or stays at the same level.\n\n` +
+                   `---CHALLENGE---\n{"question": "If two pipes fill in 4 and 6 hours, what is their combined fill rate?", "options": ["1/10", "5/12", "10", "24"], "correct": 1}`;
+        }
+        
+        const timeToFill = 1 / netRate;
+        const hours = Math.floor(timeToFill);
+        const minutes = Math.round((timeToFill - hours) * 60);
+        const timeStr = minutes > 0 ? `${hours} hour${hours !== 1 ? 's' : ''} ${minutes} minute${minutes !== 1 ? 's' : ''}` : `${hours} hour${hours !== 1 ? 's' : ''}`;
+        
+        let fractions = [];
+        for (const t of inlets) fractions.push(`1/${t}`);
+        for (const t of outlets) fractions.push(`−1/${t}`);
+        
+        return `### 📚 Subject: Mathematics — Pipes & Tanks\n**Problem Solved Step-by-Step**\n\n` +
+               `**Given:**\n` +
+               inlets.map((t, i) => `- Inlet ${i + 1}: fills tank in **${t} hours**`).join('\n') + '\n' +
+               outlets.map((t, i) => `- Outlet ${i + 1}: empties tank in **${t} hours**`).join('\n') + '\n\n' +
+               `**Step 1: Find individual rates (per hour)**\n` +
+               steps.map((s, i) => `${i + 1}. ${s}`).join('\n') + '\n\n' +
+               `**Step 2: Net rate**\n` +
+               `Net rate = ${fractions.join(' + ').replace('+ −', '− ')} = **${netRate.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}** per hour\n\n` +
+               `**Step 3: Time to fill**\n` +
+               `Time = 1 ÷ ${netRate.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} = **${timeToFill.toFixed(2)} hours**\n\n` +
+               `### ✅ Answer: **${timeStr}**\n\n` +
+               `---DIDYOUKNOW---\n💡 **Key Formula:** Time = 1 ÷ Net Rate. Always convert hours to rates first (rate = 1/time)!\n\n` +
+               `---CHALLENGE---\n{"question": "If Pipe A fills in 5 hours and Pipe B empties in 10 hours, how long to fill?", "options": ["10 hours", "7.5 hours", "5 hours", "15 hours"], "correct": 0}`;
     }
 
 };
