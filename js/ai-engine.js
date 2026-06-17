@@ -11,8 +11,8 @@ const aiEngine = {
     firecrawlMode: true,
     geminiKey: '',
     geminiMode: false,
-    groqKey: '',
-    groqMode: false,
+    groqKey: studySnapUtils.safeStorage.getItem('studysnap_groq_key', '') || '',
+    groqMode: !!studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
 
     setApiKey(key) {
         const cleanKey = key ? key.trim() : '';
@@ -240,6 +240,12 @@ const aiEngine = {
         if (this.geminiKey) {
             var geminiAnswer = await this.geminiComplete(prompt, context, systemPrompt);
             if (geminiAnswer) return geminiAnswer;
+        }
+
+        // Try Groq if Gemini failed
+        if (this.groqKey) {
+            var groqAnswer = await this.groqComplete(prompt, context, systemPrompt);
+            if (groqAnswer) return groqAnswer;
         }
 
         return this.generateSandboxResponse(prompt, systemPrompt, context);
