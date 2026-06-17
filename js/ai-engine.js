@@ -3,16 +3,16 @@
    ========================================================================== */
 
 const aiEngine = {
-    apiKey: studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX' ? '' : (studySnapUtils.safeStorage.getItem('studysnap_openai_key') || ''),
-    sandboxMode: (!studySnapUtils.safeStorage.getItem('studysnap_openai_key') || studySnapUtils.safeStorage.getItem('studysnap_openai_key') === 'SANDBOX') && !studySnapUtils.safeStorage.getItem('studysnap_tavily_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_gemini_key', '') && !studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
-    tavilyKey: studySnapUtils.safeStorage.getItem('studysnap_tavily_key', ''),
-    tavilyMode: !!studySnapUtils.safeStorage.getItem('studysnap_tavily_key', ''),
-    firecrawlKey: studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', ''),
-    firecrawlMode: !!studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', ''),
-    geminiKey: studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
-    geminiMode: !!studySnapUtils.safeStorage.getItem('studysnap_gemini_key', ''),
-    groqKey: studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
-    groqMode: !!studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
+    apiKey: '',
+    sandboxMode: true,
+    tavilyKey: '',
+    tavilyMode: false,
+    firecrawlKey: '',
+    firecrawlMode: false,
+    geminiKey: '',
+    geminiMode: false,
+    groqKey: '',
+    groqMode: false,
 
     setApiKey(key) {
         const cleanKey = key ? key.trim() : '';
@@ -230,37 +230,6 @@ const aiEngine = {
             return responses[Math.floor(Math.random() * responses.length)];
         }
 
-        // For flashcard/quiz/essay, always use sandbox (needs strict JSON format)
-        if (systemPrompt.includes("flashcard") || systemPrompt.includes("quiz") || systemPrompt.includes("essay") || systemPrompt.includes("JSON") || systemPrompt.includes("board examiner")) {
-            return this.generateSandboxResponse(prompt, systemPrompt);
-        }
-
-        // Get context from Tavily/FireCrawl for better answers
-        var context = '';
-        try {
-            if (this.tavilyKey) {
-                var tavilyResult = await this.tavilySearch(prompt);
-                if (tavilyResult) context += 'Web search results:\n' + tavilyResult + '\n\n';
-            }
-            if (this.firecrawlKey && !context) {
-                var fcResult = await this.firecrawlSearch(prompt);
-                if (fcResult) context += 'Web scrape results:\n' + fcResult + '\n\n';
-            }
-        } catch(e) { console.warn('RAG context fetch error:', e); }
-
-        // Gemini with context
-        if (this.geminiKey) {
-            var geminiAnswer = await this.geminiComplete(prompt, context, systemPrompt);
-            if (geminiAnswer) return geminiAnswer;
-        }
-
-        // Groq fallback (free, fast)
-        if (this.groqKey) {
-            var groqAnswer = await this.groqComplete(prompt, context, systemPrompt);
-            if (groqAnswer) return groqAnswer;
-        }
-
-        // No Gemini key or Gemini failed — go to sandbox
         return this.generateSandboxResponse(prompt, systemPrompt);
     },
 
@@ -966,37 +935,28 @@ const aiEngine = {
         const topic = nouns.slice(0, 3).join(", ") || query.slice(0, 40);
 
         if (qtype === "definition") {
-            return `### 📚 Subject: General Knowledge\n**Let’s Explore: ${topic}**\n\nGreat question! Let me break down **${topic}** for you:\n\n` +
-                   `**Overview:** ${topic} is an important concept. In academic contexts, it is studied across multiple subjects — science, social studies, and language arts.\n\n` +
-                   `**Key Points to Remember:**\n` +
-                   `- Start by understanding the textbook definition from your NCERT/CBSE curriculum.\n` +
-                   `- Look for real-world examples — how is this concept applied in daily life?\n` +
-                   `- Create a concept map linking ${topic} to related ideas you've already learned.\n\n` +
-                   `Would you like me to create a flashcard, quiz, or diagram on **${topic}**?\n\n` +
-                   `---DIDYOUKNOW---\n💡 **Did You Know?** The Feynman Technique — explaining a concept in simple terms — is one of the most effective ways to learn!\n\n` +
-                   `---CHALLENGE---\n{"question": "Which study technique involves teaching concepts to others?", "options": ["Feynman Technique", "Pomodoro", "Mind Mapping", "SQ3R"], "correct": 0}`;
+            if (!match) {
+                return `### 📚 Subject: General Knowledge\n**${topic}**\n\nI don't have enough information about **${topic}** in my knowledge base.\n\n**What I can do:**\n- Create flashcards on topics I know well\n- Generate quizzes from NCERT chapters\n- Help with math problems step-by-step\n- Explain well-known science concepts\n\nTry asking about a specific NCERT chapter like:\n- "What is photosynthesis?"\n- "Explain Newton's laws"\n- "How does the human heart work?"\n\n---DIDYOUKNOW---\n💡 I work best with standard CBSE/NCERT/JEE/NEET syllabus topics!\n\n---CHALLENGE---\n{"question": "Which subjects can StudySnap AI help with?", "options": ["Only Math", "Science, Math, History, Geography", "Only English", "Only Science"], "correct": 1}`;
+            }
+            return `### 📚 Subject: ${match.s}\n**StudySnap AI Explains**\n\nYou asked about **${prompt.trim()}**.\n\n${match.a}\n\n` +
+                   `---DIDYOUKNOW---\n💡 **Did You Know?** The word '${query.split(/\s+/).filter(w => w.length > 3)[0] || 'study'}' appears in many interesting contexts across different subjects!\n\n` +
+                   `---CHALLENGE---\n{"question": "What curiosity would you like to explore next?", "options": ["A new subject", "Deeper dive", "Practice quiz", "Fun fact"], "correct": 0}`;
         }
 
         if (qtype === "person") {
-            return `### 📚 Subject: General Knowledge\n**About: ${topic}**\n\nYou asked about **${topic}**. Here's what you should know:\n\n` +
-                   `To research this person:\n` +
-                   `1. **Who are they?** - Look up their birth date, nationality, and profession.\n` +
-                   `2. **Why are they famous?** - Identify their key contributions or achievements.\n` +
-                   `3. **Timeline** - Note important events in their life journey.\n` +
-                   `4. **Impact** - How did they influence their field or the world?\n\n` +
-                   `Try searching your textbook or NCERT notes for more biographical details!\n\n` +
+            if (!match) {
+                return `### 📚 Subject: General Knowledge\n**${topic}**\n\nI don't have information about **${topic}** in my knowledge base.\n\nI can help with well-known historical figures like:\n- Mahatma Gandhi\n- Abraham Lincoln\n- Albert Einstein\n- Newton\n\nTry asking "Who is Mahatma Gandhi?" or "Tell me about Newton"\n\n---DIDYOUKNOW---\n💡 My knowledge covers NCERT syllabus topics!\n\n---CHALLENGE---\n{"question": "Which leader is known as the Father of the Nation in India?", "options": ["Jawaharlal Nehru", "Mahatma Gandhi", "Subhash Chandra Bose", "B.R. Ambedkar"], "correct": 1}`;
+            }
+            return `### 📚 Subject: General Knowledge\n**About: ${topic}**\n\n${match.a}\n\n` +
                    `---DIDYOUKNOW---\n💡 **Did You Know?** The biography genre comes from Greek 'bios' (life) and 'graphein' (to write).\n\n` +
                    `---CHALLENGE---\n{"question": "What literary genre tells the story of a person's life?", "options": ["Autobiography", "Biography", "Memoir", "Chronicle"], "correct": 1}`;
         }
 
         if (qtype === "place") {
-            return `### 📚 Subject: Geography\n**Exploring: ${topic}**\n\nYou asked about the location/place **${topic}**. Here's how to study it:\n\n` +
-                   `**Geographic Analysis Framework:**\n` +
-                   `1. **Location** - Find it on a map. What continent/country is it in?\n` +
-                   `2. **Physical Features** - What is the terrain, climate, and natural resources?\n` +
-                   `3. **Human Geography** - Population, culture, economy, and landmarks.\n` +
-                   `4. **Significance** - Why is this place important historically or culturally?\n\n` +
-                   `Check your atlas or NCERT geography textbook for detailed maps and information!\n\n` +
+            if (!match) {
+                return `### 📚 Subject: Geography\n**${topic}**\n\nI don't have information about **${topic}** in my knowledge base.\n\nI can help with well-known places like:\n- Continents and oceans\n- Country capitals\n- Major rivers and mountains\n\nTry asking "What is the solar system?" or "Tell me about India"\n\n---DIDYOUKNOW---\n💡 There are 195 recognized countries in the world!\n\n---CHALLENGE---\n{"question": "What is the largest continent by area?", "options": ["Africa", "Asia", "North America", "Europe"], "correct": 1}`;
+            }
+            return `### 📚 Subject: Geography\n**Exploring: ${topic}**\n\n${match.a}\n\n` +
                    `---DIDYOUKNOW---\n💡 **Did You Know?** There are 195 recognized countries in the world today!\n\n` +
                    `---CHALLENGE---\n{"question": "What is the largest continent by area?", "options": ["Africa", "Asia", "North America", "Europe"], "correct": 1}`;
         }
@@ -1035,15 +995,13 @@ const aiEngine = {
 
         // For anything not matched, provide a helpful study-oriented response
         const reactions = [
-            `That's an interesting query about **${topic}**! As your AI study tutor, I'd suggest approaching it step by step. Break down the concept, find examples in your NCERT textbook, and practice with related problems. If you need a specific explanation, try asking with more subject context — like 'Explain ${topic} in biology' or 'What is the formula for ${topic} in physics'!`,
-            `I see you're curious about **${topic}**! To help you study this effectively: start with the basic definition from your curriculum, understand the underlying principles, and work through example problems. Feel free to ask a more specific question like a definition, formula, or historical fact about ${topic}!`,
-            `Great curiosity about **${topic}**! Here's a study tip: relate it to something you already know. Creating connections between new concepts and familiar ones strengthens memory. Want me to create flashcards, a quiz, or a diagram to help you master ${topic}?`
+            `I don't have specific information about **${topic}** in my knowledge base. But I can help with NCERT syllabus topics!`,
+            `That's an interesting topic! Unfortunately, I don't have detailed information about **${topic}** right now.`,
+            `I'm not sure about **${topic}**, but I can help with standard CBSE/JEE/NEET topics!`
         ];
         const reaction = reactions[Math.floor(Math.random() * reactions.length)];
 
-        return `### 📚 Subject: General Study\n**StudySnap AI Explores: ${topic}**\n\n${reaction}\n\n` +
-               `---DIDYOUKNOW---\n💡 **Did You Know?** Curiosity boosts learning! Studies show that asking questions activates the brain's reward system, making information easier to remember.\n\n` +
-               `---CHALLENGE---\n{"question": "What would you like to do next?", "options": ["Ask another question", "Take a quiz", "Study flashcards", "Explore diagrams"], "correct": 0}`;
+        return `### 📚 Subject: General Study\n**${topic}**\n\n${reaction}\n\n**What I can help with:**\n- Science: Photosynthesis, Newton's Laws, Human Body, Chemical Reactions\n- Math: Algebra, Geometry, Trigonometry, Calculus\n- History: Indian Independence, World Wars, French Revolution\n- Geography: Climate, Resources, Agriculture\n- English: Grammar, Tenses, Writing Skills\n\nTry asking a specific question from your NCERT textbook!\n\n---DIDYOUKNOW---\n💡 I work best with standard CBSE/NCERT/JEE/NEET syllabus topics!\n\n---CHALLENGE---\n{"question": "What would you like to do next?", "options": ["Ask about NCERT topic", "Take a quiz", "Study flashcards", "Explore diagrams"], "correct": 0}`;
     },
 
     genericFallback(prompt, query) {
