@@ -142,7 +142,7 @@ const aiEngine = {
         if (!this.geminiKey) { console.warn('Gemini: no key set'); return null; }
         var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
         console.log('Gemini: key length=' + this.geminiKey.length);
-        var models = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
+        var models = ['gemini-2.5-flash', 'gemini-2.5-pro'];
         for (var m = 0; m < models.length; m++) {
             try {
                 console.log('Gemini: trying model ' + models[m]);
@@ -236,6 +236,7 @@ const aiEngine = {
         } catch(e) { console.warn('Search error:', e); }
 
         // Try Gemini first if key is set
+        console.log('Gemini key present:', !!this.geminiKey, 'length:', this.geminiKey ? this.geminiKey.length : 0);
         if (this.geminiKey) {
             var geminiAnswer = await this.geminiComplete(prompt, context, systemPrompt);
             if (geminiAnswer) return geminiAnswer;
