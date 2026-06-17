@@ -5,8 +5,8 @@
 const aiEngine = {
     apiKey: '',
     sandboxMode: true,
-    tavilyKey: '',
-    tavilyMode: false,
+    tavilyKey: studySnapUtils.safeStorage.getItem('studysnap_tavily_key', '') || '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',
+    tavilyMode: true,
     firecrawlKey: '',
     firecrawlMode: false,
     geminiKey: '',
@@ -66,7 +66,7 @@ const aiEngine = {
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({
                     api_key: this.tavilyKey,
-                    query: query + ' education study India',
+                    query: query + ' education study India CBSE NCERT',
                     search_depth: 'basic',
                     include_answer: true,
                     max_results: 3
@@ -74,7 +74,11 @@ const aiEngine = {
             });
             if (!res.ok) return null;
             var data = await res.json();
-            return data.answer || (data.results && data.results.length > 0 ? data.results[0].content : null);
+            if (data.answer && data.answer.trim()) return data.answer;
+            if (data.results && data.results.length > 0) {
+                return data.results.map(function(r) { return r.content || ''; }).filter(Boolean).join('\n\n');
+            }
+            return null;
         } catch(e) {
             console.warn('Tavily search error:', e);
             return null;
@@ -230,11 +234,19 @@ const aiEngine = {
             return responses[Math.floor(Math.random() * responses.length)];
         }
 
-        return this.generateSandboxResponse(prompt, systemPrompt);
+        var context = '';
+        try {
+            if (this.tavilyKey) {
+                var tavilyResult = await this.tavilySearch(prompt);
+                if (tavilyResult) context = tavilyResult;
+            }
+        } catch(e) { console.warn('Tavily error:', e); }
+
+        return this.generateSandboxResponse(prompt, systemPrompt, context);
     },
 
     /* Advanced Sandbox Generative Engine */
-    generateSandboxResponse(prompt, systemPrompt) {
+    generateSandboxResponse(prompt, systemPrompt, context) {
         const query = prompt.toLowerCase();
         
         if (systemPrompt.includes("board examiner") || systemPrompt.includes("essay")) {
@@ -338,7 +350,7 @@ const aiEngine = {
             return this.formatSandboxResponse(matched);
         }
 
-        return this.genericFallback(prompt, query);
+        return this.genericFallback(prompt, query, context);
     },
 
     buildSubjectMap() {
@@ -921,13 +933,21 @@ const aiEngine = {
     },
 
     /* Build a contextual fallback response for unmatched queries */
-    contextualResponse(prompt, query, qtype) {
+    contextualResponse(prompt, query, qtype, context) {
         // Try knowledge base
         const match = this.findKnowledgeMatch(query);
         if (match) {
-            return `### 📚 Subject: ${match.s}\n**StudySnap AI Explains**\n\nYou asked about **${prompt.trim()}**.\n\n${match.a}\n\n` +
+            var ctxInfo = context ? '\n\n**Additional Info from Web:**\n' + context.substring(0, 500) : '';
+            return `### 📚 Subject: ${match.s}\n**StudySnap AI Explains**\n\nYou asked about **${prompt.trim()}**.\n\n${match.a}${ctxInfo}\n\n` +
                    `---DIDYOUKNOW---\n💡 **Did You Know?** The word '${query.split(/\s+/).filter(w => w.length > 3)[0] || 'study'}' appears in many interesting contexts across different subjects!\n\n` +
                    `---CHALLENGE---\n{"question": "What curiosity would you like to explore next?", "options": ["A new subject", "Deeper dive", "Practice quiz", "Fun fact"], "correct": 0}`;
+        }
+
+        // Use web context if available
+        if (context && context.trim().length > 20) {
+            return `### 📚 Subject: General Knowledge\n**${prompt.trim()}**\n\n${context}\n\n` +
+                   `---DIDYOUKNOW---\n💡 **Did You Know?** Always verify information from multiple sources!\n\n` +
+                   `---CHALLENGE---\n{"question": "Want to explore more?", "options": ["Ask another question", "Take a quiz", "Create flashcards", "Fun fact"], "correct": 0}`;
         }
 
         // Extract key nouns (words 4+ chars)
@@ -1004,9 +1024,9 @@ const aiEngine = {
         return `### 📚 Subject: General Study\n**${topic}**\n\n${reaction}\n\n**What I can help with:**\n- Science: Photosynthesis, Newton's Laws, Human Body, Chemical Reactions\n- Math: Algebra, Geometry, Trigonometry, Calculus\n- History: Indian Independence, World Wars, French Revolution\n- Geography: Climate, Resources, Agriculture\n- English: Grammar, Tenses, Writing Skills\n\nTry asking a specific question from your NCERT textbook!\n\n---DIDYOUKNOW---\n💡 I work best with standard CBSE/NCERT/JEE/NEET syllabus topics!\n\n---CHALLENGE---\n{"question": "What would you like to do next?", "options": ["Ask about NCERT topic", "Take a quiz", "Study flashcards", "Explore diagrams"], "correct": 0}`;
     },
 
-    genericFallback(prompt, query) {
+    genericFallback(prompt, query, context) {
         const qtype = this.detectQueryType(query);
-        return this.contextualResponse(prompt, query, qtype);
+        return this.contextualResponse(prompt, query, qtype, context);
     },
 
     /* Mock Essay Grader */

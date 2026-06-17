@@ -14,7 +14,7 @@ const app = {
 
         // Auto-configure API keys from provided values
         if (!studySnapUtils.safeStorage.getItem('studysnap_tavily_key')) {
-            aiEngine.setTavilyKey('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');
+            aiEngine.setTavilyKey('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');
         }
         if (!studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key')) {
             aiEngine.setFirecrawlKey('fc-4a6d551ae971424e91466258a3e6c506');
