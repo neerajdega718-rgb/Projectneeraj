@@ -235,6 +235,12 @@ const aiEngine = {
             }
         } catch(e) { console.warn('Search error:', e); }
 
+        // Try Gemini first if key is set
+        if (this.geminiKey) {
+            var geminiAnswer = await this.geminiComplete(prompt, context, systemPrompt);
+            if (geminiAnswer) return geminiAnswer;
+        }
+
         return this.generateSandboxResponse(prompt, systemPrompt, context);
     },
 
