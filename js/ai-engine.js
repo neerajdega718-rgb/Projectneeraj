@@ -142,7 +142,7 @@ const aiEngine = {
         if (!this.geminiKey) { console.warn('Gemini: no key set'); return null; }
         var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
         console.log('Gemini: key length=' + this.geminiKey.length);
-        var models = ['gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+        var models = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash'];
         for (var m = 0; m < models.length; m++) {
             try {
                 console.log('Gemini: trying model ' + models[m]);
@@ -155,21 +155,11 @@ const aiEngine = {
                 });
                 console.log('Gemini: status=' + res.status + ' model=' + models[m]);
                 if (res.status === 429) {
-                    console.warn('Gemini: rate limited on ' + models[m] + ', waiting 5s...');
-                    await new Promise(function(r) { setTimeout(r, 5000); });
-                    res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[m] + ':generateContent?key=' + this.geminiKey, {
-                        method: 'POST', headers: { 'content-type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: fullPrompt }] }],
-                            generationConfig: { maxOutputTokens: 8192, temperature: 0.7 }
-                        })
-                    });
-                    console.log('Gemini: retry status=' + res.status);
+                    console.warn('Gemini: rate limited on ' + models[m] + ', trying next model...');
+                    continue;
                 }
                 if (!res.ok) { 
-                    var errBody = await res.text();
                     console.warn('Gemini ' + models[m] + ' failed:', res.status); 
-                    if (res.status === 429) { console.warn('Gemini: rate limited — all models will fail, stopping.'); break; }
                     continue; 
                 }
                 var d = await res.json();
@@ -179,7 +169,7 @@ const aiEngine = {
                 }
             } catch(e) { console.warn('Gemini ' + models[m] + ' error:', e.message); }
         }
-        console.warn('Gemini: all models failed');
+        console.warn('Gemini: all models failed, falling back to sandbox');
         return null;
     },
 
