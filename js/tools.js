@@ -1392,7 +1392,10 @@ const tools = {
         var container = document.getElementById('leaderboard-live');
         if (!container) return;
 
-        database.ref('leaderboard').orderByChild('xp').limitToLast(50).on('value', function(snap) {
+        // Remove old listener before adding new one
+        if (this._leaderboardRef) this._leaderboardRef.off();
+        this._leaderboardRef = database.ref('leaderboard');
+        this._leaderboardRef.orderByChild('xp').limitToLast(50).on('value', function(snap) {
             var entries = [];
             snap.forEach(function(child) {
                 entries.push({ id: child.key, name: child.val().name, xp: child.val().xp });

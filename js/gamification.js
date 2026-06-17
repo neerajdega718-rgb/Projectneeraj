@@ -56,25 +56,28 @@ const gamification = {
     syncToFirebase() {
         const userId = typeof app !== 'undefined' && app.userId;
         if (!userId || userId === 'guest') return;
-        database.ref('users/' + userId).update({
-            xp: this.xp,
-            level: this.level,
-            coins: this.coins,
-            streak: this.streak,
-            badges: this.badges
-        });
-        // Update leaderboard
-        var userName = 'Anonymous';
         try {
-            var u = auth.currentUser;
-            if (u) userName = u.displayName || u.email.split('@')[0];
-        } catch(e) {}
-        database.ref('leaderboard/' + userId).set({
-            name: userName,
-            xp: this.level * 250 + this.xp,
-            level: this.level,
-            streak: this.streak
-        });
+            if (typeof database === 'undefined' || !database) return;
+            database.ref('users/' + userId).update({
+                xp: this.xp,
+                level: this.level,
+                coins: this.coins,
+                streak: this.streak,
+                badges: this.badges
+            });
+            // Update leaderboard
+            var userName = 'Anonymous';
+            try {
+                var u = auth ? auth.currentUser : null;
+                if (u) userName = u.displayName || (u.email ? u.email.split('@')[0] : 'Student');
+            } catch(e) {}
+            database.ref('leaderboard/' + userId).set({
+                name: userName,
+                xp: this.level * 250 + this.xp,
+                level: this.level,
+                streak: this.streak
+            });
+        } catch(e) { console.warn('syncToFirebase error:', e); }
     },
 
     /* Increment XP, trigger level ups, float text */

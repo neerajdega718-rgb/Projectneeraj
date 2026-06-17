@@ -38,6 +38,11 @@ const parentDashboard = {
         let userData = {};
 
         try {
+            if (typeof database === 'undefined' || !database) {
+                content.innerHTML = '<div class="modal-header"><h3 style="font-size:16px; font-family:var(--font-heading);"><i class="fa-solid fa-user-shield" style="color:var(--accent-blue);"></i> Parent Dashboard</h3><span class="modal-close" onclick="app.closeModal()">&times;</span></div><div style="text-align:center; padding:20px;"><p style="font-size:11px; color:var(--text-secondary);">Please login to access Parent Dashboard</p></div>';
+                modal.style.display = 'flex';
+                return;
+            }
             const snap = await database.ref('users/' + childId).once('value');
             if (snap.exists()) userData = snap.val();
         } catch (e) {

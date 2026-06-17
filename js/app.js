@@ -27,7 +27,7 @@ const app = {
                 // Update profile name
                 var nameEl = document.getElementById('profile-name');
                 if (user) {
-                    var displayName = user.displayName || user.email.split('@')[0];
+                    var displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Student');
                     if (nameEl) nameEl.textContent = displayName;
                     this._updateProCrown(user);
                     // On first login, write initial data if none exists
@@ -322,13 +322,6 @@ const app = {
             </div>
         `;
         modal.style.display = 'flex';
-    },
-
-    saveApiKey() {
-        const key = document.getElementById('settings-key-input').value.trim();
-        aiEngine.setApiKey(key);
-        alert(key ? "API Key loaded! Sandbox mode disabled." : "API Key cleared. Sandbox mode active.");
-        this.closeModal();
     },
 
     saveTavilyKey() {
@@ -653,7 +646,7 @@ const app = {
         if (!nameEl) return;
         var u = user || auth.currentUser;
         if (!u) return;
-        var dn = u.displayName || u.email.split('@')[0];
+        var dn = u.displayName || (u.email ? u.email.split('@')[0] : 'Student');
         nameEl.innerHTML = dn + (this.isPro ? ' <span class="pro-crown" onclick="event.stopPropagation();app.openProModal()" style="cursor:pointer;">&#128081;</span>' : '');
     },
 

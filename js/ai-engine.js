@@ -21,7 +21,7 @@ const aiEngine = {
         } else {
             studySnapUtils.safeStorage.setItem('studysnap_openai_key', 'SANDBOX');
             this.apiKey = '';
-            this.sandboxMode = !this.tavilyKey && !this.firecrawlKey && !this.geminiKey;
+            this.sandboxMode = !this.tavilyKey && !this.firecrawlKey;
         }
     },
 
@@ -30,7 +30,7 @@ const aiEngine = {
         this.tavilyKey = cleanKey;
         this.tavilyMode = !!cleanKey;
         studySnapUtils.safeStorage.setItem('studysnap_tavily_key', cleanKey);
-        if (!this.apiKey && !this.firecrawlKey && !this.geminiKey) this.sandboxMode = !this.tavilyMode;
+        if (!this.apiKey && !this.firecrawlKey) this.sandboxMode = !this.tavilyMode;
     },
 
     setFirecrawlKey(key) {
@@ -38,7 +38,7 @@ const aiEngine = {
         this.firecrawlKey = cleanKey;
         this.firecrawlMode = !!cleanKey;
         studySnapUtils.safeStorage.setItem('studysnap_firecrawl_key', cleanKey);
-        if (!this.apiKey && !this.tavilyKey && !this.geminiKey) this.sandboxMode = !this.firecrawlMode;
+        if (!this.apiKey && !this.tavilyKey) this.sandboxMode = !this.firecrawlMode;
     },
 
     setGroqKey(key) {

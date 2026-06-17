@@ -71,6 +71,7 @@ const studyFriends = {
         const userId = app.userId || 'guest_' + Date.now();
 
         try {
+            if (typeof database === 'undefined' || !database) { alert('Please login first.'); return; }
             const roomRef = database.ref('studyRooms/' + roomId);
             await roomRef.set({
                 id: roomId,
@@ -103,6 +104,7 @@ const studyFriends = {
         const userId = app.userId || 'guest_' + Date.now();
 
         try {
+            if (typeof database === 'undefined' || !database) { alert('Please login first.'); return; }
             const roomSnap = await database.ref('studyRooms/' + roomId).once('value');
             if (!roomSnap.exists()) {
                 alert('Room not found! Check the code and try again.');
