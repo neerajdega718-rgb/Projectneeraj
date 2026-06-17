@@ -11,6 +11,10 @@
       "$uid": {
         ".write": "auth != null && auth.uid === $uid"
       }
+    },
+    "studyRooms": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     }
   }
 }

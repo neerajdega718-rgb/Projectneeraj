@@ -1,4 +1,4 @@
-const CACHE_NAME = 'studysnap-v1';
+const CACHE_NAME = 'studysnap-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -13,6 +13,8 @@ const urlsToCache = [
   '/js/essay.js',
   '/js/tools.js',
   '/js/firebase-config.js',
+  '/js/study-friends.js',
+  '/js/parent-dashboard.js',
   '/assets/studysnap-icon.png'
 ];
 

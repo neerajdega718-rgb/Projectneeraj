@@ -570,6 +570,26 @@
                             </div>
                         </div>
 
+                        <div class="strip-item" onclick="studyFriends.openLobby()">
+                            <div class="strip-icon" style="background:var(--accent-blue-light); color:var(--accent-blue);">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>Study With Friends</h4>
+                                <p>Real-time multiplayer study sessions</p>
+                            </div>
+                        </div>
+
+                        <div class="strip-item" onclick="parentDashboard.openDashboard()">
+                            <div class="strip-icon" style="background:var(--accent-green-light); color:var(--accent-green);">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                            <div class="strip-text">
+                                <h4>Parent Dashboard</h4>
+                                <p>Track your child's study progress</p>
+                            </div>
+                        </div>
+
                         <div class="strip-item" onclick="app.openSettings()">
                             <div class="strip-icon" style="background:var(--accent-saffron-light); color:var(--accent-saffron);">
                                 <i class="fa-solid fa-gears"></i>
@@ -633,6 +653,8 @@
     <script src="js/flashcards.js?v=3"></script>
     <script src="js/quizzes.js?v=3"></script>
     <script src="js/essay.js?v=3"></script>
+    <script src="js/study-friends.js?v=1"></script>
+    <script src="js/parent-dashboard.js?v=1"></script>
     <script src="js/app.js?v=12"></script>
     <script>
         if ('serviceWorker' in navigator) {
