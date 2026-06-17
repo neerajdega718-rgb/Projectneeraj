@@ -7,8 +7,8 @@ const aiEngine = {
     sandboxMode: true,
     tavilyKey: studySnapUtils.safeStorage.getItem('studysnap_tavily_key', '') || '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',
     tavilyMode: true,
-    firecrawlKey: '',
-    firecrawlMode: false,
+    firecrawlKey: studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', '') || 'fc-01ee2ecf62084e77be72e2f88245d6d1',
+    firecrawlMode: true,
     geminiKey: '',
     geminiMode: false,
     groqKey: '',
@@ -90,11 +90,10 @@ const aiEngine = {
         try {
             var res = await fetch('https://api.firecrawl.dev/v1/search', {
                 method: 'POST',
-                headers: { 'content-type': 'application/json' },
+                headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + this.firecrawlKey },
                 body: JSON.stringify({
-                    apiKey: this.firecrawlKey,
-                    query: query + ' study education',
-                    limit: 3,
+                    query: query + ' study education CBSE NCERT',
+                    limit: 2,
                     scrapeOptions: { formats: ['markdown'] }
                 })
             });
@@ -240,7 +239,11 @@ const aiEngine = {
                 var tavilyResult = await this.tavilySearch(prompt);
                 if (tavilyResult) context = tavilyResult;
             }
-        } catch(e) { console.warn('Tavily error:', e); }
+            if (!context && this.firecrawlKey) {
+                var fcResult = await this.firecrawlSearch(prompt);
+                if (fcResult) context = fcResult;
+            }
+        } catch(e) { console.warn('Search error:', e); }
 
         return this.generateSandboxResponse(prompt, systemPrompt, context);
     },
