@@ -19,9 +19,6 @@ const app = {
         if (!studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key')) {
             aiEngine.setFirecrawlKey('fc-4a6d551ae971424e91466258a3e6c506');
         }
-        if (!studySnapUtils.safeStorage.getItem('studysnap_gemini_key')) {
-            aiEngine.setGeminiKey('');
-        }
 
         // Initialize Firebase Auth state listener
         try {
@@ -278,22 +275,15 @@ const app = {
             </div>
 
             <div class="settings-group-box">
-                <h4 style="font-size:12.5px;">🧠 Gemini AI API Key</h4>
-                <p style="font-size:10px; color:var(--text-secondary);">Primary LLM — generates answers using web context. Free at makersuite.google.com.</p>
-                <input class="settings-input" type="password" id="settings-gemini-input" placeholder="Enter Gemini API Key..." value="${aiEngine.geminiKey}">
-                <button class="primary-btn" onclick="app.saveGeminiKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
-            </div>
-
-            <div class="settings-group-box">
                 <h4 style="font-size:12.5px;">⚡ Groq API Key</h4>
-                <p style="font-size:10px; color:var(--text-secondary);">Free fast LLM fallback. Get free key at console.groq.com.</p>
+                <p style="font-size:10px; color:var(--text-secondary);">Free fast LLM — generates answers using web context. Get free key at console.groq.com.</p>
                 <input class="settings-input" type="password" id="settings-groq-input" placeholder="Enter Groq API Key..." value="${aiEngine.groqKey}">
                 <button class="primary-btn" onclick="app.saveGroqKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
             </div>
 
             <div class="settings-group-box">
                 <h4 style="font-size:12.5px;">🔍 Web Search (Tavily) API Key</h4>
-                <p style="font-size:10px; color:var(--text-secondary);">Provides context for Gemini answers. Get a free key at tavily.com.</p>
+                <p style="font-size:10px; color:var(--text-secondary);">Provides context for AI answers. Get a free key at tavily.com.</p>
                 <input class="settings-input" type="password" id="settings-tavily-input" placeholder="Enter Tavily API Key..." value="${aiEngine.tavilyKey}">
                 <button class="primary-btn" onclick="app.saveTavilyKey()" style="padding:6px 12px; font-size:11px; width:auto; align-self:flex-start;">Save Key</button>
             </div>
@@ -352,13 +342,6 @@ const app = {
         const key = document.getElementById('settings-fc-input').value.trim();
         aiEngine.setFirecrawlKey(key);
         alert(key ? "FireCrawl API Key loaded! Web scrape enabled." : "FireCrawl key cleared.");
-        this.closeModal();
-    },
-
-    saveGeminiKey() {
-        const key = document.getElementById('settings-gemini-input').value.trim();
-        aiEngine.setGeminiKey(key);
-        alert(key ? "Gemini API Key loaded! AI answers enabled." : "Gemini key cleared.");
         this.closeModal();
     },
 

@@ -9,8 +9,6 @@ const aiEngine = {
     tavilyMode: true,
     firecrawlKey: studySnapUtils.safeStorage.getItem('studysnap_firecrawl_key', '') || 'fc-01ee2ecf62084e77be72e2f88245d6d1',
     firecrawlMode: true,
-    geminiKey: '',
-    geminiMode: false,
     groqKey: studySnapUtils.safeStorage.getItem('studysnap_groq_key', '') || '',
     groqMode: !!studySnapUtils.safeStorage.getItem('studysnap_groq_key', ''),
 
@@ -41,14 +39,6 @@ const aiEngine = {
         this.firecrawlMode = !!cleanKey;
         studySnapUtils.safeStorage.setItem('studysnap_firecrawl_key', cleanKey);
         if (!this.apiKey && !this.tavilyKey && !this.geminiKey) this.sandboxMode = !this.firecrawlMode;
-    },
-
-    setGeminiKey(key) {
-        const cleanKey = key ? key.trim() : '';
-        this.geminiKey = cleanKey;
-        this.geminiMode = !!cleanKey;
-        studySnapUtils.safeStorage.setItem('studysnap_gemini_key', cleanKey);
-        if (!this.apiKey) this.sandboxMode = !this.geminiMode;
     },
 
     setGroqKey(key) {
@@ -138,41 +128,6 @@ const aiEngine = {
         return results.slice(0, 3).join('\n\n');
     },
 
-    async geminiComplete(prompt, context, systemPrompt) {
-        if (!this.geminiKey) { console.warn('Gemini: no key set'); return null; }
-        var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
-        console.log('Gemini: key length=' + this.geminiKey.length);
-        var models = ['gemini-2.5-flash', 'gemini-2.5-pro'];
-        for (var m = 0; m < models.length; m++) {
-            try {
-                console.log('Gemini: trying model ' + models[m]);
-                var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + models[m] + ':generateContent?key=' + this.geminiKey, {
-                    method: 'POST', headers: { 'content-type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: fullPrompt }] }],
-                        generationConfig: { maxOutputTokens: 8192, temperature: 0.7 }
-                    })
-                });
-                console.log('Gemini: status=' + res.status + ' model=' + models[m]);
-                if (res.status === 429) {
-                    console.warn('Gemini: rate limited on ' + models[m] + ', trying next model...');
-                    continue;
-                }
-                if (!res.ok) { 
-                    console.warn('Gemini ' + models[m] + ' failed:', res.status); 
-                    continue; 
-                }
-                var d = await res.json();
-                if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) {
-                    var answer = d.candidates[0].content.parts.map(function(p) { return p.text; }).join('');
-                    if (answer) { console.log('Gemini: SUCCESS with ' + models[m]); return answer; }
-                }
-            } catch(e) { console.warn('Gemini ' + models[m] + ' error:', e.message); }
-        }
-        console.warn('Gemini: all models failed, falling back to sandbox');
-        return null;
-    },
-
     async groqComplete(prompt, context, systemPrompt) {
         if (!this.groqKey) return null;
         var fullPrompt = systemPrompt + '\n\n' + (context || '') + '\n\n' + prompt;
@@ -235,14 +190,7 @@ const aiEngine = {
             }
         } catch(e) { console.warn('Search error:', e); }
 
-        // Try Gemini first if key is set
-        console.log('Gemini key present:', !!this.geminiKey, 'length:', this.geminiKey ? this.geminiKey.length : 0);
-        if (this.geminiKey) {
-            var geminiAnswer = await this.geminiComplete(prompt, context, systemPrompt);
-            if (geminiAnswer) return geminiAnswer;
-        }
-
-        // Try Groq if Gemini failed
+        // Try Groq if key is set
         if (this.groqKey) {
             var groqAnswer = await this.groqComplete(prompt, context, systemPrompt);
             if (groqAnswer) return groqAnswer;
